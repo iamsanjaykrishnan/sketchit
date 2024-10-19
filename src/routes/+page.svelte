@@ -1,59 +1,42 @@
-<script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+<script lang="ts">
+  import { goto } from '$app/navigation'; // Import the goto function
+  import FormComponent from '../components/input/FormComponent.svelte';
+  import { files, imageUrls } from '../stores/imageStore';
+
+  let fileInput: HTMLInputElement;
+
+  // Delay function using setTimeout wrapped in a Promise
+  function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function handleFileInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target && target.files) {
+      const selectedFiles = [...target.files];
+      files.set(selectedFiles); // Update the files store
+      updateImageUrls(selectedFiles);
+      target.value = ''; // Reset the input
+    }
+  }
+
+  async function updateImageUrls(selectedFiles: File[]): Promise<void> {
+    // Navigate to the image page once files are uploaded
+    if (selectedFiles.length > 0) {
+      goto('/image');
+    }
+    
+    // Add a delay before updating image URLs
+    await delay(300); // Wait for 300ms
+
+    // Revoke previous object URLs and create new ones
+    imageUrls.update(urls => {
+      urls.forEach(url => URL.revokeObjectURL(url));
+      return selectedFiles.map(file => URL.createObjectURL(file));
+    });
+  }
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
+<FormComponent {fileInput} />
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
-
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
+<input type="file" multiple on:change={handleFileInput} hidden bind:this={fileInput} />
