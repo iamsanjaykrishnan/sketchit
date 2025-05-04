@@ -4,146 +4,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Upload - Persistent Manual Grid (Fix)</title> <script src="https://cdn.tailwindcss.com"></script>
+    <title>Sketchit - Image Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         /* Apply Inter font globally */
         body {
             font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Style for dragover state */
+        body.dragover {
+            background-color: #e0f2fe; /* Light blue background */
+        }
+        .drop-indicator {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            border: 4px dashed #3b82f6; background-color: rgba(59, 130, 246, 0.1);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            pointer-events: none; opacity: 0; visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        body.dragover .drop-indicator { opacity: 1; visibility: visible; }
+        .drop-indicator-text {
+            font-size: 1.5rem; font-weight: 600; color: #2563eb;
+            background-color: rgba(255, 255, 255, 0.8); padding: 1rem 2rem; border-radius: 0.5rem;
         }
 
         /* Hide the default file input */
-        #imageUpload {
-            display: none;
-        }
+        #imageUpload { display: none; }
 
         /* Style for the image preview container */
-        .instagram-card {
-            max-width: 480px;
-            /* Typical max-width */
-            width: 100%;
-        }
+        .instagram-card { max-width: 480px; width: 100%; }
 
         /* Container for image and canvas */
         .image-display-container {
-            position: relative;
-            background-color: #f3f4f6;
-            /* bg-gray-100 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-            /* Maintain aspect ratio */
-            max-height: 600px; /* Added max-height for large screens */
+            position: relative; background-color: #f3f4f6; /* bg-gray-100 */
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; aspect-ratio: 1 / 1; max-height: 600px;
         }
 
         /* Ensure image fits well */
         .instagram-card img#imagePreview {
-            display: block;
-            max-width: 100%;
-            max-height: 100%;
-            height: auto;
-            width: auto;
-            object-fit: contain;
+            display: block; max-width: 100%; max-height: 100%;
+            height: auto; width: auto; object-fit: contain;
         }
 
         /* Canvas overlay */
         #overlayCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            /* Adjusted by JS */
-            height: 100%;
-            /* Adjusted by JS */
-            cursor: default;
-            /* Default cursor */
-            touch-action: none; /* Prevent scrolling on touch devices */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            cursor: default; touch-action: none;
         }
 
         /* Cursors for different states */
         #overlayCanvas.manual-grid-drawing,
-        #overlayCanvas.manual-grid-adjusting:not(.dragging-grid-handle):not(.dragging-grid-square):not(.handle-hover):not(.square-hover) {
-             cursor: crosshair; /* Cursor for manual grid selection/adjustment (only when not hovering interactable elements) */
-        }
-        #overlayCanvas.dragging-pose,
-        #overlayCanvas.point-hover {
-            cursor: grab; /* Cursor when hovering/dragging pose point */
-        }
-        #overlayCanvas.dragging-grid-handle,
-        #overlayCanvas.handle-hover {
-             cursor: grab; /* Cursor when dragging/hovering grid handle */
-        }
-         #overlayCanvas.dragging-grid-square,
-         #overlayCanvas.square-hover {
-             cursor: move; /* Cursor when dragging/hovering the whole square */
-         }
+        #overlayCanvas.manual-grid-adjusting:not(.dragging-grid-handle):not(.dragging-grid-square):not(.handle-hover):not(.square-hover) { cursor: crosshair; }
+        #overlayCanvas.dragging-pose, #overlayCanvas.point-hover { cursor: grab; }
+        #overlayCanvas.dragging-grid-handle, #overlayCanvas.handle-hover { cursor: grab; }
+        #overlayCanvas.dragging-grid-square, #overlayCanvas.square-hover { cursor: move; }
 
         /* Material Symbols styling */
         .material-symbols-outlined {
-            vertical-align: middle;
-            font-size: 24px;
-            cursor: pointer;
+            vertical-align: middle; font-size: 24px; cursor: pointer;
             transition: color 0.2s ease;
-            /* Smooth color transition */
+             display: inline-block; line-height: 1;
         }
-
-        /* Style for active icons */
-        .material-symbols-outlined.active {
-            color: #3b82f6;
-            /* Blue color when active */
-        }
-
-        /* Style for disabled icons */
-        .material-symbols-outlined.disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-            color: #6b7280;
-            /* Gray color when disabled */
-        }
-
-        .material-symbols-outlined.disabled.active {
-            /* Ensure active style doesn't override disabled */
-            color: #6b7280;
-            opacity: 0.5;
-        }
+        .material-symbols-outlined.active { color: #3b82f6; }
+        .material-symbols-outlined.disabled { cursor: not-allowed; opacity: 0.5; color: #6b7280; }
+        .material-symbols-outlined.disabled.active { color: #6b7280; opacity: 0.5; }
 
         /* Comments area styling */
         #commentArea {
-            max-height: 100px;
-            overflow-y: auto;
-            padding-top: 0.5rem;
-            font-size: 0.875rem;
-            line-height: 1.25rem;
-            color: #1f2937;
+            max-height: 100px; overflow-y: auto; padding-top: 0.5rem;
+            font-size: 0.875rem; line-height: 1.25rem; color: #1f2937;
         }
-
-        #commentArea p {
-            margin-bottom: 0.375rem;
-            word-break: break-word;
-        }
-
-        #commentArea .comment-username {
-            font-weight: 600;
-            margin-right: 0.375rem;
-            color: #111827;
-        }
-
+        #commentArea p { margin-bottom: 0.375rem; word-break: break-word; }
+        #commentArea .comment-username { font-weight: 600; margin-right: 0.375rem; color: #111827; }
         #commentArea .comment-error { color: #ef4444; }
         #commentArea .comment-success { color: #22c55e; }
         #commentArea .comment-info { color: #374151; }
-        #commentArea .comment-warning { color: #f97316; } /* Added warning style */
+        #commentArea .comment-warning { color: #f97316; }
 
         /* Modal Styling */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000; opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.6); display: flex;
+            align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-overlay.visible { opacity: 1; visibility: visible; }
         .modal-content {
@@ -164,52 +113,125 @@
 
         /* Adjustment Handle Styling */
         .adjustment-handle {
-            position: absolute; /* Positioned relative to canvas in JS */
-            width: 10px; height: 10px;
-            background-color: rgba(255, 0, 255, 0.8); /* Magenta */
-            border: 1px solid rgba(0,0,0,0.5);
-            border-radius: 50%; /* Circle */
-            cursor: grab;
-            transform: translate(-50%, -50%); /* Center the handle */
-            z-index: 10; /* Ensure handles are above canvas drawing */
-            pointer-events: none; /* Initially no pointer events */
+            position: absolute; width: 10px; height: 10px;
+            background-color: rgba(255, 0, 255, 0.8); border: 1px solid rgba(0,0,0,0.5);
+            border-radius: 50%; cursor: grab; transform: translate(-50%, -50%);
+            z-index: 10; pointer-events: none;
         }
-        /* Style edge handles slightly differently (e.g., square) */
         .adjustment-handle[data-type^="t"],
         .adjustment-handle[data-type^="b"],
-        .adjustment-handle[data-type^="m"] {
-             border-radius: 0; /* Square for edge handles */
-        }
-        /* Make handles interactive only when adjusting */
-        #overlayCanvas.manual-grid-adjusting .adjustment-handle {
-            pointer-events: auto;
-        }
-
+        .adjustment-handle[data-type^="m"] { border-radius: 0; }
+        #overlayCanvas.manual-grid-adjusting .adjustment-handle { pointer-events: auto; }
 
         /* Confirm Button Styling */
-        #confirmGridButton {
-             /* Tailwind classes used in JS */
-             transition: opacity 0.3s ease, visibility 0.3s ease;
+        #confirmGridButton { transition: opacity 0.3s ease, visibility 0.3s ease; }
+
+        /* Colorful Upload Card Styling - Purple to Pink */
+        #uploadCard {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); /* Purple to Pink */
+            border: none;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+        #uploadCard:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        #uploadCard h2 {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+         #uploadCard p {
+            color: #f3e8ff; /* Lighter purple/pink text */
+        }
+        #uploadCard .dashed-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+         #uploadCard:hover .dashed-zone {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+         #uploadCard .dashed-zone .material-symbols-outlined {
+             color: rgba(255, 255, 255, 0.7);
+             transition: color 0.3s ease;
+             font-size: 40px;
+         }
+         #uploadCard:hover .dashed-zone .material-symbols-outlined {
+              color: white;
+         }
+        #uploadCard .dashed-zone .upload-text-primary {
+            color: white;
+            font-weight: 500;
+        }
+         #uploadCard .dashed-zone .upload-text-secondary {
+            color: #fce7f3; /* Lighter pink text */
+        }
+
+         /* External New Upload Button Styling */
+         #newUploadButtonExt {
+             cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+             padding: 0.75rem 1.5rem; border: 1px solid transparent; font-size: 1rem;
+             font-weight: 500; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+             color: white; background-color: #4f46e5; /* bg-indigo-600 */
+             transition: background-color 0.15s ease-in-out; margin-bottom: 1.5rem; width: auto;
+         }
+         #newUploadButtonExt:hover { background-color: #4338ca; /* hover:bg-indigo-700 */ }
+         #newUploadButtonExt:focus {
+             outline: 2px solid transparent; outline-offset: 2px;
+             box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
+         }
+         #newUploadButtonExt .material-symbols-outlined {
+             margin-right: 0.5rem; font-size: 20px; vertical-align: middle;
+             color: white; cursor: pointer;
+         }
+
+         /* Privacy/Terms Policy Card Styling */
+         .policy-card {
+             max-width: 480px; /* Match width of other cards */
+             width: 100%;
+             margin-top: 0.75rem; /* Space between policy cards */
+             background-color: #f9fafb; /* Slightly off-white */
+             border: 1px solid #e5e7eb; /* Soft border */
+         }
+
     </style>
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
+    <div class="drop-indicator">
+        <span class="drop-indicator-text">Drop image here</span>
+    </div>
+
     <div class="w-full max-w-md mx-auto flex flex-col items-center">
-        <label for="imageUpload"
-            class="cursor-pointer inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out mb-6 w-full sm:w-auto">
-            Upload Image
+
+        <label id="uploadCard" for="imageUpload" class="cursor-pointer rounded-lg shadow-lg p-6 md:p-8 w-full text-center mb-6 block">
+            <h2 class="text-2xl font-bold mb-3">Sketchit</h2>
+            <p class="text-base mb-6">
+                Webpage that uses mediapipe to detect human faces or pose and create a reference grid for art.
+            </p>
+            <div class="dashed-zone flex flex-col items-center justify-center rounded-lg p-8">
+                 <span class="material-symbols-outlined mb-3">upload_file</span>
+                 <span class="upload-text-primary text-lg">Click to upload</span>
+                 <span class="upload-text-secondary text-sm mt-1">or drag and drop an image</span>
+            </div>
         </label>
         <input type="file" id="imageUpload" accept="image/*">
-
+        <button id="newUploadButtonExt" class="hidden">
+             <span class="material-symbols-outlined">upload</span>
+             Upload New Image
+        </button>
         <div id="imagePreviewContainer"
             class="instagram-card bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden hidden mx-auto">
-            <div class="p-3 border-b border-gray-200 flex items-center space-x-3">
-                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span class="material-symbols-outlined text-gray-500 text-lg">person</span>
-                </div>
-                <span class="font-semibold text-sm text-gray-800">sketchit</span>
+            <div class="p-3 border-b border-gray-200 flex items-center justify-between space-x-3">
+                 <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-500 text-lg">person</span>
+                    </div>
+                    <span class="font-semibold text-sm text-gray-800">sketchit</span>
+                 </div>
             </div>
 
             <div class="relative">
@@ -224,7 +246,6 @@
                  </button>
             </div>
 
-
             <div class="p-3 border-t border-gray-200 space-y-3">
                 <div class="flex space-x-4 items-center">
                     <span id="iconFace" class="material-symbols-outlined text-gray-700 hover:text-gray-900 disabled"
@@ -234,14 +255,26 @@
                     <span id="iconGrid" class="material-symbols-outlined text-gray-700 hover:text-gray-900 disabled"
                         title="Manually Draw Grid Square">grid_on</span>
                      <span id="iconRestart" class="material-symbols-outlined text-gray-700 hover:text-gray-900"
-                        title="Clear All Overlays & Data">restart_alt</span>
+                         title="Clear All Overlays & Data">restart_alt</span>
                 </div>
                 <div id="commentArea">
                     <p class="comment-info"><span class="comment-username">System</span>Initializing MediaPipe...</p>
                 </div>
             </div>
         </div>
-    </div>
+        <div id="privacyPolicyCard" class="policy-card rounded-lg shadow-sm p-3 text-center">
+            <ul class="text-xs text-gray-500 text-left list-disc pl-5 space-y-1">
+                <li>
+                    <span class="font-medium">Privacy Note:</span>
+                    Your images are processed directly in your browser using MediaPipe library.
+                </li>
+                <li>
+                    <span class="font-medium">Terms of Use:</span>
+                    This tool is provided 'as-is' without warranty for creative use. Use responsibly.
+                </li>
+            </ul>
+        </div>
+        </div>
 
     <div id="faceSelectionModal" class="modal-overlay">
         <div class="modal-content">
@@ -277,36 +310,39 @@
         const cancelModalButton = document.getElementById('cancelModalButton');
         const adjustmentHandlesContainer = document.getElementById('adjustmentHandlesContainer');
         const confirmGridButton = document.getElementById('confirmGridButton');
+        const bodyElement = document.body;
+        const uploadCard = document.getElementById('uploadCard');
+        const newUploadButtonExt = document.getElementById('newUploadButtonExt'); // Get the EXTERNAL new upload button
 
         // --- MediaPipe Variables ---
         let faceLandmarker, poseLandmarker, drawingUtils, visionResolver = null;
         let isFaceLandmarkerInitialized = false, isPoseLandmarkerInitialized = false;
         let currentImageElement = null;
-        let lastFaceDetections = null, lastPoseDetections = null; // Original normalized results
+        let lastFaceDetections = null, lastPoseDetections = null;
 
         // --- Draggable State (Pose) ---
-        let draggablePoseLandmarks = []; // Stores pose landmarks in PIXEL coordinates
+        let draggablePoseLandmarks = [];
         let draggedPointIndex = -1;
         let isDraggingPosePoint = false;
         const pointRadius = 5;
-        const hitRadius = pointRadius * 1.5; // For pose points
+        const hitRadius = pointRadius * 1.5;
         let dragOffsetX = 0, dragOffsetY = 0;
 
         // --- Manual Grid State ---
-        let isManualGridModeActive = false; // Is the overall manual grid *definition* feature active?
-        let isDrawingManualGrid = false; // Is the user currently dragging for the initial draw?
-        let isAdjustingManualGrid = false; // Is the user currently in the adjustment phase?
+        let isManualGridModeActive = false;
+        let isDrawingManualGrid = false;
+        let isAdjustingManualGrid = false;
         let manualGridStartX = 0, manualGridStartY = 0;
         let manualGridCurrentX = 0, manualGridCurrentY = 0;
-        let manualGridRect = null; // Stores the { x, y, size } of the square during adjustment
-        let finalManualGridRect = null; // Stores the { x, y, size } of the *confirmed* grid rectangle
-        let showFinalManualGrid = false; // Track visibility state for the *confirmed* manual grid
-        const handleSize = 10; // Visual size of adjustment handles
-        const handleHitRadius = handleSize * 1.5; // Click/touch target radius for handles (increased slightly)
-        let adjustmentHandles = []; // Stores { x, y, type } for each handle ('tl', 'tr', etc.)
-        let draggedHandleType = null; // Type of handle being dragged
-        let isDraggingGridSquare = false; // Is the user dragging the whole square?
-        let gridDragStartX = 0, gridDragStartY = 0; // Starting position for dragging the whole square
+        let manualGridRect = null;
+        let finalManualGridRect = null;
+        let showFinalManualGrid = false;
+        const handleSize = 10;
+        const handleHitRadius = handleSize * 1.5;
+        let adjustmentHandles = [];
+        let draggedHandleType = null;
+        let isDraggingGridSquare = false;
+        let gridDragStartX = 0, gridDragStartY = 0;
 
         // --- Hover State (for cursors) ---
         let isHoveringPosePoint = false;
@@ -316,7 +352,6 @@
         // --- Visibility State ---
         let showFaceLandmarks = false;
         let showPoseLandmarks = false;
-        // `showFinalManualGrid` is now the primary visibility flag for the confirmed grid
 
         // --- State ---
         let isCommentAreaInitialized = false;
@@ -331,145 +366,88 @@
         const POSE_MODEL_KEY = 'poseLandmarkerHeavy_v1';
         const FACE_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
         const POSE_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
-        const MIN_GRID_SIZE = 10; // Minimum pixel size for the grid square
+        const MIN_GRID_SIZE = 10;
 
         // === IndexedDB Helper Functions ===
-        // ... (Existing IndexedDB functions: openDB, saveModelToDB, getModelFromDB, fetchModelBlob, getModelAssetBuffer - unchanged) ...
+        // ... (Unchanged) ...
         async function openDB(name, version) {
              return new Promise((resolve, reject) => {
                  addComment(`Opening model cache DB (${name} v${version})...`, 'info');
                  const request = indexedDB.open(name, version);
-
                  request.onupgradeneeded = function () {
                      try {
                          const db = request.result;
                          if (!db.objectStoreNames.contains(MODEL_STORE_NAME)) {
                              db.createObjectStore(MODEL_STORE_NAME, { keyPath: 'name' });
-                             console.log(`Object store "${MODEL_STORE_NAME}" created.`);
                          }
-                     } catch (err) {
-                         console.error("Error during DB upgrade:", err);
-                         addComment(`Error setting up model cache DB: ${err.message}`, 'error');
-                         reject('Error during DB upgrade');
-                     }
+                     } catch (err) { reject('Error during DB upgrade'); }
                  };
-
-                 request.onsuccess = function () {
-                     console.log(`DB ${name} v${version} opened successfully.`);
-                     addComment('Model cache DB opened.', 'success');
-                     resolve(request.result);
-                 };
-
-                 request.onerror = function (event) {
-                     console.error('Error opening IndexedDB:', event.target.error);
-                     addComment(`Error opening model cache DB: ${event.target.error}`, 'error');
-                     reject('Error opening IndexedDB');
-                 };
+                 request.onsuccess = () => resolve(request.result);
+                 request.onerror = (e) => reject('Error opening IndexedDB');
              });
          }
         async function saveModelToDB(db, modelName, modelData) {
              return new Promise((resolve, reject) => {
-                 if (!db) {
-                     return reject('Database connection is not available.');
-                 }
+                 if (!db) return reject('DB not available.');
                  try {
-                     const transaction = db.transaction(MODEL_STORE_NAME, 'readwrite');
-                     const store = transaction.objectStore(MODEL_STORE_NAME);
-                     const request = store.put({ name: modelName, data: modelData }); // Storing Blob directly
-
-                     request.onsuccess = () => {
-                         console.log(`Model "${modelName}" saved to IndexedDB.`);
-                         resolve();
-                     };
-
-                     request.onerror = (event) => {
-                         console.error(`Error saving model "${modelName}" to IndexedDB:`, event.target.error);
-                         reject(`Error saving model "${modelName}" to IndexedDB`);
-                     };
-                 } catch (error) {
-                     console.error(`Error initiating transaction to save "${modelName}":`, error);
-                     reject(`Failed to start transaction for saving model "${modelName}"`);
-                 }
+                     const tx = db.transaction(MODEL_STORE_NAME, 'readwrite');
+                     const store = tx.objectStore(MODEL_STORE_NAME);
+                     const request = store.put({ name: modelName, data: modelData });
+                     request.onsuccess = () => resolve();
+                     request.onerror = (e) => reject(`Error saving ${modelName}`);
+                 } catch (e) { reject(`Error saving ${modelName}`); }
              });
          }
         async function getModelFromDB(db, modelName) {
              return new Promise((resolve, reject) => {
-                 if (!db) {
-                     return reject('Database connection is not available.');
-                 }
+                 if (!db) return reject('DB not available.');
                  try {
-                     const transaction = db.transaction(MODEL_STORE_NAME, 'readonly');
-                     const store = transaction.objectStore(MODEL_STORE_NAME);
+                     const tx = db.transaction(MODEL_STORE_NAME, 'readonly');
+                     const store = tx.objectStore(MODEL_STORE_NAME);
                      const request = store.get(modelName);
-
-                     request.onsuccess = () => {
-                         resolve(request.result?.data || null); // Returns Blob or null
-                     };
-
-                     request.onerror = (event) => {
-                         console.error(`Error retrieving model "${modelName}" from IndexedDB:`, event.target.error);
-                         reject(`Error retrieving model "${modelName}" from IndexedDB`);
-                     };
-                 } catch (error) {
-                     console.error(`Error initiating transaction to get "${modelName}":`, error);
-                     reject(`Failed to start transaction for getting model "${modelName}"`);
-                 }
+                     request.onsuccess = () => resolve(request.result?.data || null);
+                     request.onerror = (e) => reject(`Error getting ${modelName}`);
+                 } catch (e) { reject(`Error getting ${modelName}`); }
              });
          }
         async function fetchModelBlob(url) {
              addComment(`Downloading model from ${url}...`, 'info');
              const response = await fetch(url);
-             if (!response.ok) {
-                 throw new Error(`Failed to fetch model: ${response.status} ${response.statusText}`);
-             }
+             if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
              const blob = await response.blob();
-             addComment(`Successfully fetched model (${(blob.size / 1024 / 1024).toFixed(2)} MB).`, 'success');
+             addComment(`Fetched model (${(blob.size / 1024 / 1024).toFixed(2)} MB).`, 'success');
              return blob;
          }
         async function getModelAssetBuffer(db, modelName, modelUrl) {
              try {
-                 // 1. Try to get from IndexedDB
                  let modelBlob = await getModelFromDB(db, modelName);
-
-                 if (modelBlob) {
-                     addComment(`Loading model "${modelName}" from cache...`, 'success');
-                 } else {
-                     // 2. If not found, fetch from network
-                     addComment(`Model "${modelName}" not in cache.`, 'info');
+                 if (modelBlob) { addComment(`Loading ${modelName} from cache...`, 'success'); }
+                 else {
+                     addComment(`${modelName} not in cache.`, 'info');
                      modelBlob = await fetchModelBlob(modelUrl);
-
-                     // 3. Store the fetched blob in IndexedDB
                      try {
-                         addComment(`Storing model "${modelName}" in cache...`, 'info');
+                         addComment(`Storing ${modelName} in cache...`, 'info');
                          await saveModelToDB(db, modelName, modelBlob);
-                         addComment(`Model "${modelName}" stored successfully.`, 'success');
-                     } catch (saveError) {
-                         addComment(`Failed to store model "${modelName}" in cache: ${saveError}. Will use fetched version.`, 'warning');
-                         // Proceed with the fetched blob even if saving failed
-                     }
+                         addComment(`${modelName} stored.`, 'success');
+                     } catch (saveError) { addComment(`Failed to store ${modelName}: ${saveError}.`, 'warning'); }
                  }
-
-                 // 4. Convert Blob to Uint8Array
                  const arrayBuffer = await modelBlob.arrayBuffer();
                  return new Uint8Array(arrayBuffer);
-
              } catch (error) {
-                 addComment(`Failed to load or fetch model "${modelName}": ${error.message || error}`, 'error');
-                 console.error(`Error processing model "${modelName}":`, error);
-                 return null; // Indicate failure
+                 addComment(`Failed to load/fetch ${modelName}: ${error}`, 'error');
+                 return null;
              }
          }
-
 
         // --- Initialization ---
         async function initializeApp() {
             if (canvasCtx) { drawingUtils = new DrawingUtils(canvasCtx); }
             else { console.error("Failed to get canvas context"); return; }
-            updateIconStates(); // Initial state
+            resetCommonState(); // Ensure initial state is correct
             landmarkDB = await openDB(DB_NAME, DB_VERSION);
             await initializeFaceLandmarker();
             await initializePoseLandmarker();
-            addComment('Ready. Upload an image to start.', 'info');
+            addComment('Ready. Upload an image or drop it here to start.', 'info');
         }
 
         // --- Utility Functions ---
@@ -480,7 +458,7 @@
         function clearCanvas() { if (canvasCtx && overlayCanvas) { canvasCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); } }
 
         // --- MediaPipe Initialization ---
-        // ... (Keep existing functions: initializeVisionResolver, initializeFaceLandmarker, initializePoseLandmarker - unchanged) ...
+        // ... (Unchanged: initializeVisionResolver, initializeFaceLandmarker, initializePoseLandmarker) ...
         async function initializeVisionResolver() {
              if (!visionResolver) {addComment('Loading MediaPipe Vision Tasks...', 'info'); try {visionResolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"); addComment('Vision Tasks ready.', 'success');} catch (error) {console.error("Vision Tasks Init Error:", error); addComment(`Error initializing Vision Tasks: ${error.message || 'Unknown error'}`, 'error'); visionResolver = null; throw error;} } return visionResolver;
          }
@@ -491,23 +469,12 @@
                  const faceModelBuffer = await getModelAssetBuffer(landmarkDB, FACE_MODEL_KEY, FACE_MODEL_URL);
                  if (!faceModelBuffer) { addComment(`Failed to load Face Landmarker model.`, 'error'); return; }
                  faceLandmarker = await FaceLandmarker.createFromOptions(visionResolver, {
-                     baseOptions: {
-                         modelAssetBuffer: faceModelBuffer, // Use the buffer
-                         delegate: "GPU"
-                     },
-                     outputFaceBlendshapes: true, // Kept original setting
-                     runningMode: "IMAGE",
-                     numFaces: 3 // Kept original setting
+                     baseOptions: { modelAssetBuffer: faceModelBuffer, delegate: "GPU" },
+                     outputFaceBlendshapes: true, runningMode: "IMAGE", numFaces: 3
                  });
                  addComment('Face Landmarker loaded.', 'success');
-                 isFaceLandmarkerInitialized = true;
-                 updateIconStates();
-             } catch (e) {
-                 console.error("Face Landmarker Init Error:", e);
-                 addComment(`Error initializing Face Landmarker: ${e.message || 'Unknown error'}`, 'error');
-                 isFaceLandmarkerInitialized = false;
-                 updateIconStates();
-             }
+                 isFaceLandmarkerInitialized = true; updateIconStates();
+             } catch (e) { console.error("Face Landmarker Init Error:", e); addComment(`Error initializing Face Landmarker: ${e}`, 'error'); isFaceLandmarkerInitialized = false; updateIconStates(); }
          }
         async function initializePoseLandmarker() {
              try {
@@ -516,125 +483,142 @@
                  const poseModelBuffer = await getModelAssetBuffer(landmarkDB, POSE_MODEL_KEY, POSE_MODEL_URL);
                  if (!poseModelBuffer) { addComment(`Failed to load Pose Landmarker model.`, 'error'); return; }
                  poseLandmarker = await PoseLandmarker.createFromOptions(visionResolver, {
-                     baseOptions: {
-                         modelAssetBuffer: poseModelBuffer, // Use the buffer
-                         delegate: "GPU"
-                     },
-                     runningMode: "IMAGE",
-                     numPoses: 1 // Kept original setting
+                     baseOptions: { modelAssetBuffer: poseModelBuffer, delegate: "GPU" },
+                     runningMode: "IMAGE", numPoses: 1
                  });
                  addComment('Pose Landmarker loaded.', 'success');
                  isPoseLandmarkerInitialized = true; updateIconStates();
-             } catch (e) {
-                 console.error("Pose Landmarker Init Error:", e);
-                 addComment(`Error initializing Pose Landmarker: ${e.message || 'Unknown error'}`, 'error');
-                 isPoseLandmarkerInitialized = false; updateIconStates();
-             }
+             } catch (e) { console.error("Pose Landmarker Init Error:", e); addComment(`Error initializing Pose Landmarker: ${e}`, 'error'); isPoseLandmarkerInitialized = false; updateIconStates(); }
          }
 
-        // --- UI State & Reset ---
-        function updateIconStates() {
-            const imageLoaded = !!currentImageElement;
-            const definingManualGrid = isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid;
-
-            // --- Face Icon ---
-            const faceDisabled = !isFaceLandmarkerInitialized || !imageLoaded || definingManualGrid; // Disable only if actively defining grid
-            iconFace.classList.toggle('disabled', faceDisabled);
-            iconFace.classList.toggle('active', showFaceLandmarks && !faceDisabled);
-            if (!imageLoaded) iconFace.title = "Load an image first";
-            else if (!isFaceLandmarkerInitialized) iconFace.title = "Face Landmarker not ready";
-            else if (definingManualGrid) iconFace.title = "Disabled during manual grid definition";
-            else iconFace.title = showFaceLandmarks ? "Hide Face Landmarks / Grid" : "Show Face Landmarks / Grid";
-
-            // --- Pose Icon ---
-            const poseDisabled = !isPoseLandmarkerInitialized || !imageLoaded || definingManualGrid; // Disable only if actively defining grid
-            iconPose.classList.toggle('disabled', poseDisabled);
-            iconPose.classList.toggle('active', showPoseLandmarks && !poseDisabled);
-            if (!imageLoaded) iconPose.title = "Load an image first";
-            else if (!isPoseLandmarkerInitialized) iconPose.title = "Pose Landmarker not ready";
-            else if (definingManualGrid) iconPose.title = "Disabled during manual grid definition";
-            else iconPose.title = showPoseLandmarks ? "Hide Pose Landmarks" : "Show Pose Landmarks";
-
-            // --- Manual Grid Icon ---
-            const gridDisabled = !imageLoaded;
-            iconGrid.classList.toggle('disabled', gridDisabled);
-            // Active state depends on whether defining or showing confirmed grid
-            const gridActive = (definingManualGrid || (showFinalManualGrid && finalManualGridRect)) && !gridDisabled;
-            iconGrid.classList.toggle('active', gridActive);
-            // Title depends on the current state
-            if (!imageLoaded) iconGrid.title = "Load an image first";
-            else if (isAdjustingManualGrid) iconGrid.title = "Cancel Grid Adjustment";
-            else if (isDrawingManualGrid) iconGrid.title = "Cancel Grid Drawing";
-            else if (isManualGridModeActive) iconGrid.title = "Cancel Manual Grid Mode"; // Should ideally not happen if adjusting/drawing are false
-            else if (finalManualGridRect) iconGrid.title = showFinalManualGrid ? "Hide Confirmed Grid" : "Show Confirmed Grid"; // NEW: Toggle visibility
-            else iconGrid.title = "Manually Draw Grid Square"; // Default: Start drawing
-
-            // --- Canvas Cursors & Classes ---
-            // Remove all potential cursor/state classes first
-            overlayCanvas.classList.remove(
-                'manual-grid-drawing', 'manual-grid-adjusting',
-                'dragging-pose', 'dragging-grid-handle', 'dragging-grid-square',
-                'point-hover', 'handle-hover', 'square-hover'
-            );
-
-            // Add classes based on current state
-            if (isDrawingManualGrid) overlayCanvas.classList.add('manual-grid-drawing');
-            if (isAdjustingManualGrid) overlayCanvas.classList.add('manual-grid-adjusting');
-            if (isDraggingPosePoint) overlayCanvas.classList.add('dragging-pose');
-            if (draggedHandleType) overlayCanvas.classList.add('dragging-grid-handle');
-            if (isDraggingGridSquare) overlayCanvas.classList.add('dragging-grid-square');
-            if (isHoveringPosePoint) overlayCanvas.classList.add('point-hover');
-            if (isHoveringGridHandle) overlayCanvas.classList.add('handle-hover');
-            if (isHoveringGridSquare) overlayCanvas.classList.add('square-hover');
-
-            // --- Confirm Button Visibility ---
-            if (isAdjustingManualGrid) {
-                confirmGridButton.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
-                confirmGridButton.classList.add('opacity-100', 'visible', 'pointer-events-auto');
-            } else {
-                confirmGridButton.classList.add('opacity-0', 'invisible', 'pointer-events-none');
-                confirmGridButton.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
-            }
-
-            // --- Adjustment Handles Visibility ---
-            // Handles are added/removed in updateAdjustmentHandles, but pointer events are controlled via CSS class on canvas
-            updateAdjustmentHandles(); // Ensure handles are correctly displayed or hidden
+        // --- Reset Common State ---
+        function resetCommonState() {
+            if (commentArea) { commentArea.innerHTML = ''; }
+            isCommentAreaInitialized = false;
+            clearCanvas();
+            currentImageElement = null;
+            lastFaceDetections = null;
+            lastPoseDetections = null;
+            draggablePoseLandmarks = [];
+            selectedReferenceFaceIndex = null;
+            showFaceLandmarks = false;
+            showPoseLandmarks = false;
+            resetManualGridState(true);
+            resetPreviewVisuals(); // Call this before updateIconStates
+            updateIconStates();
         }
 
-        function handleImageUpload(event) { // Resets everything
-             if (commentArea) { commentArea.innerHTML = ''; } isCommentAreaInitialized = false; clearCanvas();
-             currentImageElement = null; lastFaceDetections = null; lastPoseDetections = null;
-             draggablePoseLandmarks = []; selectedReferenceFaceIndex = null; showFaceLandmarks = false; showPoseLandmarks = false;
-             resetManualGridState(true); // FULL reset, including final grid
-             updateIconStates(); resetPreviewVisuals();
-             const file = event.target.files[0];
-             if (file && file.type.startsWith('image/')) {
-                 addComment(`Loading image "${file.name}"...`, 'info'); const reader = new FileReader();
-                 reader.onload = function (e) {imagePreview.src = e.target.result; imagePreview.onload = () => {currentImageElement = imagePreview; imagePreviewContainer.classList.remove('hidden'); imagePreview.classList.remove('hidden'); placeholderText.classList.add('hidden'); resizeCanvasToImage(); addComment(`Image loaded. Ready for detection or manual grid.`, 'success'); updateIconStates();}; imagePreview.onerror = () => {addComment(`Error displaying image.`, 'error'); resetFullPreview();};}
-                 reader.onerror = function (e) {addComment(`Error loading image file: ${e.target.error.message || 'Unknown error'}`, 'error'); resetFullPreview();}; reader.readAsDataURL(file);
-             } else { const message = file ? `Invalid file type: "${file.type}".` : 'No file selected.'; addComment(message, 'error'); resetFullPreview(); }
-         }
+        // --- Image Loading (File) ---
+        function processImageFile(file) {
+            // Don't reset here, reset happens *before* calling this
+            if (file && file.type.startsWith('image/')) {
+                addComment(`Loading image "${file.name}"...`, 'info');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.crossOrigin = "Anonymous";
+                    imagePreview.src = e.target.result;
+                    imagePreview.onload = () => {
+                        currentImageElement = imagePreview;
+                        uploadCard.classList.add('hidden'); // Hide upload card
+                        newUploadButtonExt.classList.remove('hidden'); // Show external new upload button
+                        imagePreviewContainer.classList.remove('hidden'); // Show preview
+                        imagePreview.classList.remove('hidden');
+                        placeholderText.classList.add('hidden');
+                        resizeCanvasToImage();
+                        addComment(`Image loaded. Ready for detection or manual grid.`, 'success');
+                        updateIconStates();
+                    };
+                    imagePreview.onerror = () => {
+                        addComment(`Error displaying loaded image file.`, 'error');
+                        resetFullPreview(); // Reset if image fails to load display
+                    };
+                }
+                reader.onerror = (e) => {
+                    addComment(`Error reading image file: ${e.target.error || 'Unknown error'}`, 'error');
+                    resetFullPreview();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const message = file ? `Invalid file type: "${file.type}". Only images allowed.` : 'No valid image file provided.';
+                addComment(message, 'error');
+                resetFullPreview(); // Reset if file is invalid
+            }
+        }
+
+        // --- Image Loading (URL) ---
+        function processImageUrl(url) {
+             // Don't reset here, reset happens *before* calling this
+            if (!url) {
+                addComment('No image URL provided.', 'error');
+                resetFullPreview();
+                return;
+            }
+
+            addComment(`Loading image from URL...`, 'info');
+
+            imagePreview.crossOrigin = "Anonymous";
+            imagePreview.src = url;
+
+            imagePreview.onload = () => {
+                currentImageElement = imagePreview;
+                uploadCard.classList.add('hidden'); // Hide upload card
+                newUploadButtonExt.classList.remove('hidden'); // Show external new upload button
+                imagePreviewContainer.classList.remove('hidden'); // Show preview
+                imagePreview.classList.remove('hidden');
+                placeholderText.classList.add('hidden');
+                resizeCanvasToImage();
+                addComment(`Image from URL loaded. Ready for detection or manual grid.`, 'success');
+                try {
+                    const tempCanvas = document.createElement('canvas'); tempCanvas.width = 1; tempCanvas.height = 1;
+                    const tempCtx = tempCanvas.getContext('2d'); tempCtx.drawImage(imagePreview, 0, 0, 1, 1); tempCtx.getImageData(0, 0, 1, 1);
+                } catch (e) {
+                    if (e.name === "SecurityError") { addComment(`Image loaded, but it's from a different origin without CORS headers. MediaPipe detection might not work.`, 'warning'); }
+                    else { console.warn("Unexpected error checking canvas taint:", e); }
+                }
+                updateIconStates();
+            };
+
+            imagePreview.onerror = () => {
+                addComment(`Error loading image from URL: ${url}. Check the URL and network connection.`, 'error');
+                resetFullPreview(); // Reset if URL fails to load
+            };
+        }
+
+
+        // Original handler for file input change
+        function handleFileInputChange(event) {
+            resetCommonState(); // Reset state *before* processing
+            const file = event.target.files ? event.target.files[0] : null;
+            if (file) {
+                processImageFile(file);
+            } else {
+                 addComment('No file selected.', 'info');
+                 // No need to call resetFullPreview again, resetCommonState did it.
+            }
+        }
+
+        // Modified resetPreviewVisuals - Controls visibility of upload card vs preview + button
         function resetPreviewVisuals() {
-             imagePreviewContainer.classList.add('hidden'); imagePreview.src = '#'; imagePreview.classList.add('hidden'); placeholderText.classList.add('hidden');
+             if (uploadCard) uploadCard.classList.remove('hidden'); // SHOW upload card
+             if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden'); // HIDE preview
+             if (newUploadButtonExt) newUploadButtonExt.classList.add('hidden'); // HIDE external button
+             imagePreview.removeAttribute('src');
+             imagePreview.removeAttribute('crossOrigin');
+             imagePreview.classList.add('hidden');
+             placeholderText.classList.add('hidden');
          }
-        function resetFullPreview() { // Resets everything, including confirmed grid
-             resetPreviewVisuals(); clearCanvas(); currentImageElement = null;
-             lastFaceDetections = null; lastPoseDetections = null;
-             draggablePoseLandmarks = []; selectedReferenceFaceIndex = null; showFaceLandmarks = false; showPoseLandmarks = false;
-             resetManualGridState(true); // FULL reset
-             updateIconStates(); hideFaceSelectionModal();
-             if (imageUpload) { imageUpload.value = null; }
-             addComment('Preview reset. Upload a new image.', 'info');
+
+        function resetFullPreview() {
+             resetCommonState(); // Use the common reset function
+             if (imageUpload) { imageUpload.value = null; } // Clear file input value
+             addComment('Preview reset. Upload a new image or drop it here.', 'info');
          }
 
         // Resets states related to manual grid definition/adjustment.
-        // Pass `resetConfirmedGrid = true` to also clear the final grid (e.g., on new image load or restart).
         function resetManualGridState(resetConfirmedGrid = false) {
-            // isManualGridModeActive = false; // <<< FIX: REMOVED THIS LINE
             isDrawingManualGrid = false;
             isAdjustingManualGrid = false;
             manualGridRect = null;
-            // Only reset the final grid if explicitly requested
             if (resetConfirmedGrid) {
                 finalManualGridRect = null;
                 showFinalManualGrid = false;
@@ -642,48 +626,145 @@
             adjustmentHandles = [];
             draggedHandleType = null;
             isDraggingGridSquare = false;
-            updateAdjustmentHandles(); // Clear DOM handles
-            // Don't call updateIconStates here, let the calling function handle it
+            updateAdjustmentHandles();
         }
 
         // Clears overlays and detection data, including manual grid
         function clearOverlays() {
             addComment('Clearing overlays and detection data...', 'info', 'sketchit');
-            // Clear data
             lastFaceDetections = null;
             lastPoseDetections = null;
-            draggablePoseLandmarks = []; // Clear dragged points as well
-
-            // Reset UI state
-            showFaceLandmarks = false; // Turn off visibility flags
+            draggablePoseLandmarks = [];
+            showFaceLandmarks = false;
             showPoseLandmarks = false;
-            selectedReferenceFaceIndex = null; // Clear face selection for grid
-            hideFaceSelectionModal(); // Ensure modal is hidden
-
-            resetManualGridState(true); // Reset manual grid completely, including confirmed
-            isManualGridModeActive = false; // Also ensure the overall mode is off after clearing
-
-            redrawCanvas(); // Redraw (will be empty)
-            updateIconStates(); // Update icon appearance
+            selectedReferenceFaceIndex = null;
+            hideFaceSelectionModal();
+            resetManualGridState(true);
+            isManualGridModeActive = false;
+            redrawCanvas();
+            updateIconStates();
         }
 
-        // --- Canvas Resizing ---
-        function resizeCanvasToImage() {
-             if (!currentImageElement || !overlayCanvas || !imagePreviewContainer || !currentImageElement.naturalWidth) return;
-             const img = currentImageElement; const canvas = overlayCanvas; const container = img.parentElement.parentElement; // Go up to the relative container
-             const cW = container.offsetWidth; const cH = container.offsetHeight; const imgW = img.naturalWidth; const imgH = img.naturalHeight;
-             const cRatio = cW / cH; const imgRatio = imgW / imgH; let rW, rH, oX, oY;
-             if (imgRatio > cRatio) { rW = cW; rH = cW / imgRatio; oX = 0; oY = (cH - rH) / 2; }
-             else { rH = cH; rW = cH * imgRatio; oY = 0; oX = (cW - rW) / 2; }
+        // --- UI State & Icon Updates ---
+        function updateIconStates() {
+            // Only enable landmark/grid icons if an image is loaded AND the preview is visible
+            const imageLoadedAndVisible = !!currentImageElement && !imagePreviewContainer.classList.contains('hidden');
+            const definingManualGrid = isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid;
 
-             // Apply size to the image container first
-             const imageDisplayContainer = img.parentElement;
-             imageDisplayContainer.style.width = `${cW}px`; // Use container width
-             imageDisplayContainer.style.height = `${cH}px`; // Use container height
+            // --- Visibility of Upload Card vs Preview ---
+            // This logic is now primarily handled in resetCommonState, processImageFile, processImageUrl
+            // uploadCard.classList.toggle('hidden', imageLoadedAndVisible);
+            // imagePreviewContainer.classList.toggle('hidden', !imageLoadedAndVisible);
+            // newUploadButtonExt.classList.toggle('hidden', !imageLoadedAndVisible);
 
-             // Apply size and position to canvas
-             canvas.width = rW; canvas.height = rH;
-             canvas.style.left = `${oX}px`; canvas.style.top = `${oY}px`; canvas.style.width = `${rW}px`; canvas.style.height = `${rH}px`;
+
+            // Face Icon
+            const faceDisabled = !isFaceLandmarkerInitialized || !imageLoadedAndVisible || definingManualGrid;
+            iconFace.classList.toggle('disabled', faceDisabled);
+            iconFace.classList.toggle('active', showFaceLandmarks && !faceDisabled);
+            iconFace.title = faceDisabled ? (imageLoadedAndVisible ? (definingManualGrid ? "Disabled during grid definition" : "Face Landmarker not ready") : "Load an image first") : (showFaceLandmarks ? "Hide Face Landmarks / Grid" : "Show Face Landmarks / Grid");
+
+            // Pose Icon
+            const poseDisabled = !isPoseLandmarkerInitialized || !imageLoadedAndVisible || definingManualGrid;
+            iconPose.classList.toggle('disabled', poseDisabled);
+            iconPose.classList.toggle('active', showPoseLandmarks && !poseDisabled);
+            iconPose.title = poseDisabled ? (imageLoadedAndVisible ? (definingManualGrid ? "Disabled during grid definition" : "Pose Landmarker not ready") : "Load an image first") : (showPoseLandmarks ? "Hide Pose Landmarks" : "Show Pose Landmarks");
+
+            // Grid Icon
+            const gridDisabled = !imageLoadedAndVisible; // Disable if no image loaded/visible
+            iconGrid.classList.toggle('disabled', gridDisabled);
+            const gridActive = (definingManualGrid || (showFinalManualGrid && finalManualGridRect)) && !gridDisabled;
+            iconGrid.classList.toggle('active', gridActive);
+            if (!imageLoadedAndVisible) iconGrid.title = "Load an image first";
+            else if (isAdjustingManualGrid) iconGrid.title = "Cancel Grid Adjustment";
+            else if (isDrawingManualGrid) iconGrid.title = "Cancel Grid Drawing";
+            else if (isManualGridModeActive) iconGrid.title = "Cancel Manual Grid Mode";
+            else if (finalManualGridRect) iconGrid.title = showFinalManualGrid ? "Hide Confirmed Grid" : "Show Confirmed Grid";
+            else iconGrid.title = "Manually Draw Grid Square";
+
+            // Canvas Cursors & Classes (only apply if image is visible)
+            overlayCanvas.classList.remove( 'manual-grid-drawing', 'manual-grid-adjusting', 'dragging-pose', 'dragging-grid-handle', 'dragging-grid-square', 'point-hover', 'handle-hover', 'square-hover');
+             if(imageLoadedAndVisible) {
+                if (isDrawingManualGrid) overlayCanvas.classList.add('manual-grid-drawing');
+                if (isAdjustingManualGrid) overlayCanvas.classList.add('manual-grid-adjusting');
+                if (isDraggingPosePoint) overlayCanvas.classList.add('dragging-pose');
+                if (draggedHandleType) overlayCanvas.classList.add('dragging-grid-handle');
+                if (isDraggingGridSquare) overlayCanvas.classList.add('dragging-grid-square');
+                if (isHoveringPosePoint) overlayCanvas.classList.add('point-hover');
+                if (isHoveringGridHandle) overlayCanvas.classList.add('handle-hover');
+                if (isHoveringGridSquare) overlayCanvas.classList.add('square-hover');
+             }
+
+            // Confirm Button Visibility
+            const showConfirm = isAdjustingManualGrid && imageLoadedAndVisible;
+            confirmGridButton.classList.toggle('opacity-0', !showConfirm);
+            confirmGridButton.classList.toggle('invisible', !showConfirm);
+            confirmGridButton.classList.toggle('pointer-events-none', !showConfirm);
+            confirmGridButton.classList.toggle('opacity-100', showConfirm);
+            confirmGridButton.classList.toggle('visible', showConfirm);
+            confirmGridButton.classList.toggle('pointer-events-auto', showConfirm);
+
+            updateAdjustmentHandles();
+        }
+
+        // --- Canvas Resizing --- REFINED with LOGGING ---
+         function resizeCanvasToImage() {
+             // Ensure elements exist and image has loaded dimensions
+             if (!currentImageElement || !overlayCanvas || !imagePreviewContainer || !currentImageElement.naturalWidth || currentImageElement.naturalWidth === 0) {
+                 console.warn("Resize skipped: Missing elements or zero natural width.");
+                 return;
+             }
+             const img = currentImageElement;
+             const canvas = overlayCanvas;
+             const container = img.parentElement; // Direct parent: image-display-container
+
+             // Use the offsetWidth/Height of the container which has aspect-ratio CSS
+             const cW = container.offsetWidth;
+             const cH = container.offsetHeight; // This should respect the aspect-ratio: 1/1
+
+             const imgW = img.naturalWidth;
+             const imgH = img.naturalHeight;
+
+             // Check for valid dimensions
+             if (cW <= 0 || cH <= 0 || imgW <= 0 || imgH <= 0) {
+                 console.warn(`Resize skipped: Invalid dimensions detected - Container: ${cW}x${cH}, Image: ${imgW}x${imgH}`);
+                 return;
+             }
+
+             console.log(`Resize Start: Container W/H: ${cW}x${cH}, Image Natural W/H: ${imgW}x${imgH}`);
+
+             const imgRatio = imgW / imgH;
+             let rW, rH, oX, oY;
+
+             // Calculate the rendered image size within the container based on object-fit: contain
+             // The container is square (aspect-ratio: 1/1)
+             if (imgRatio > 1) { // Image is wider than tall
+                 rW = cW; // Image fills container width
+                 rH = cW / imgRatio; // Height is calculated based on image ratio
+                 oX = 0;
+                 oY = (cH - rH) / 2; // Center vertically
+             } else { // Image is taller than wide or square
+                 rH = cH; // Image fills container height
+                 rW = cH * imgRatio; // Width is calculated based on image ratio
+                 oY = 0;
+                 oX = (cW - rW) / 2; // Center horizontally
+             }
+
+             // Ensure calculated dimensions are valid numbers
+             if (isNaN(rW) || isNaN(rH) || isNaN(oX) || isNaN(oY)) {
+                 console.error("Resize Error: Calculated NaN values.", {rW, rH, oX, oY});
+                 return;
+             }
+
+             console.log(`Resize Calculated: Rendered Img W/H: ${rW.toFixed(1)}x${rH.toFixed(1)}, Offset X/Y: ${oX.toFixed(1)}x${oY.toFixed(1)}`);
+
+             // Apply size and position to canvas FIRST
+             canvas.width = rW; // Set intrinsic size for drawing
+             canvas.height = rH;
+             canvas.style.width = `${rW}px`; // Set display size
+             canvas.style.height = `${rH}px`;
+             canvas.style.left = `${oX}px`; // Position canvas to overlay the rendered image
+             canvas.style.top = `${oY}px`;
 
              // Apply size and position to adjustment handles container
              adjustmentHandlesContainer.style.left = `${oX}px`;
@@ -691,12 +772,21 @@
              adjustmentHandlesContainer.style.width = `${rW}px`;
              adjustmentHandlesContainer.style.height = `${rH}px`;
 
-             // Recalculate draggable pose points if data exists
-             if (lastPoseDetections && lastPoseDetections.landmarks && lastPoseDetections.landmarks.length > 0) {
-                 console.log("Resize: Recalculating draggable pose landmarks from normalized data");
-                 draggablePoseLandmarks = lastPoseDetections.landmarks[0].map(lm => ({
-                     x: lm.x * canvas.width, y: lm.y * canvas.height, visibility: lm.visibility
-                 }));
+             console.log(`Resize Applied: Canvas W/H: ${canvas.width}x${canvas.height}, Style W/H: ${canvas.style.width}x${canvas.style.height}, Style L/T: ${canvas.style.left}x${canvas.style.top}`);
+
+
+             // Recalculate draggable pose points using the NEW canvas dimensions
+             if (lastPoseDetections?.landmarks?.length > 0) {
+                 console.log(`Resize: Recalculating draggable pose landmarks using canvas W/H: ${canvas.width}x${canvas.height}`);
+                 draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
+                      const pixelX = lm.x * canvas.width;
+                      const pixelY = lm.y * canvas.height;
+                      // Add log for a specific point (e.g., nose)
+                      if (index === 0) { // Assuming index 0 is nose
+                          console.log(`Resize Recalc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                      }
+                      return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                 });
              } else {
                  draggablePoseLandmarks = [];
              }
@@ -712,37 +802,24 @@
              updateIconStates(); // Ensure icons/buttons are correct
          }
 
-
         // --- Central Drawing Function ---
+        // ... (Unchanged: redrawCanvas) ...
         function redrawCanvas() {
             clearCanvas();
-
-            // Draw Face Landmarks / Face Grid (only if not defining manual grid)
             if (showFaceLandmarks && lastFaceDetections && !isManualGridModeActive && !isDrawingManualGrid && !isAdjustingManualGrid) {
                 drawFaceLandmarksInternal(lastFaceDetections, selectedReferenceFaceIndex);
             }
-
-            // Draw Pose Landmarks (only if not defining manual grid)
             if (showPoseLandmarks && draggablePoseLandmarks.length > 0 && !isManualGridModeActive && !isDrawingManualGrid && !isAdjustingManualGrid) {
                 drawPoseLandmarksInternal();
             }
-
-            // Draw Manual Grid - Different stages
-            if (isDrawingManualGrid) {
-                drawManualGridSelection(); // Dashed line during initial drag
-            } else if (isAdjustingManualGrid && manualGridRect) {
-                drawAdjustableGridSquare(); // Solid square during adjustment phase
-                // Handles are drawn separately by updateAdjustmentHandles
-            } else if (showFinalManualGrid && finalManualGridRect) {
-                drawGridFromRect(finalManualGridRect); // Final grid lines after confirmation
-            }
-
-            // Update icons (which also updates handles and confirm button visibility)
+            if (isDrawingManualGrid) { drawManualGridSelection(); }
+            else if (isAdjustingManualGrid && manualGridRect) { drawAdjustableGridSquare(); }
+            else if (showFinalManualGrid && finalManualGridRect) { drawGridFromRect(finalManualGridRect); }
             updateIconStates();
         }
 
         // --- Face Detection & Drawing ---
-        // ... (Keep existing functions: showFaceSelectionModal, hideFaceSelectionModal, handleFaceSelection, drawFaceLandmarksInternal - unchanged) ...
+        // ... (Unchanged: showFaceSelectionModal, hideFaceSelectionModal, handleFaceSelection, drawFaceLandmarksInternal, handleFaceIconClick) ...
         function showFaceSelectionModal(numFaces) {
              modalFaceButtons.innerHTML = ''; for (let i = 0; i < numFaces; i++) {const b = document.createElement('button'); b.textContent = `Face ${i + 1}`; b.classList.add('select-face-btn'); b.dataset.index = i; b.addEventListener('click', handleFaceSelection); modalFaceButtons.appendChild(b);} faceSelectionModal.classList.add('visible');
          }
@@ -751,659 +828,459 @@
              const idx = parseInt(event.target.dataset.index, 10); selectedReferenceFaceIndex = idx; addComment(`Selected Face ${idx + 1} for grid.`, 'success', 'User'); hideFaceSelectionModal(); redrawCanvas();
          }
         function drawFaceLandmarksInternal(results, gridFaceIndex = null) {
-             if (!results || !results.faceLandmarks || !drawingUtils) return;
-             if (results.faceLandmarks.length === 0) return;
-             // console.log("Drawing internal face landmarks..."); // Less verbose logging
+             if (!results?.faceLandmarks || !drawingUtils || results.faceLandmarks.length === 0) return;
              results.faceLandmarks.forEach((landmarks, index) => {
                  const isSelected = index === gridFaceIndex;
                  const eyeC = isSelected ? "#FF3030" : "#FFA0A0", lipC = isSelected ? "#E0E0E0" : "#B0B0B0", ovalC = isSelected ? "#E0E0E0" : "#B0B0B0";
-                 if (landmarks && landmarks.length > 0) {
+                 if (landmarks?.length > 0) {
                      try {
                          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, { color: eyeC, lineWidth: 1 });
                          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, { color: eyeC, lineWidth: 1 });
                          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, { color: ovalC, lineWidth: 1 });
                          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, { color: lipC, lineWidth: 1 });
-                     }
-                     catch (e) {
-                         if (isSelected)
-                             addComment(`Error drawing basic landmarks for Face ${index + 1}.`, 'error');
-                     }
-                 } else {
-                     if (isSelected)
-                         addComment(`No landmarks for selected Face ${index + 1}.`, 'info');
-                     return;
-                 }
-                 // --- Face Grid Drawing (only for selected face) ---
+                     } catch (e) { if (isSelected) addComment(`Error drawing basic landmarks for Face ${index + 1}.`, 'error'); }
+                 } else { if (isSelected) addComment(`No landmarks for selected Face ${index + 1}.`, 'info'); return; }
+
                  if (isSelected) {
-                     const pxLm = landmarks.map(p => ({
-                         x: p.x * overlayCanvas.width,
-                         y: p.y * overlayCanvas.height
-                     }));
-
-                     // Calculate bounding box of the face landmarks
+                     const pxLm = landmarks.map(p => ({ x: p.x * overlayCanvas.width, y: p.y * overlayCanvas.height }));
                      let fMinX = Infinity, fMaxX = -Infinity, fMinY = Infinity, fMaxY = -Infinity;
-                     pxLm.forEach(p => {
-                         if (p.x < fMinX) fMinX = p.x; if (p.x > fMaxX) fMaxX = p.x;
-                         if (p.y < fMinY) fMinY = p.y; if (p.y > fMaxY) fMaxY = p.y;
-                     });
-
-                     // Calculate grid size based on the larger dimension of the face bounding box
-                     let fWidth = Math.abs(fMaxX - fMinX);
-                     let fHeight = Math.abs(fMaxY - fMinY);
-                     let gridSize = Math.max(fWidth, fHeight); // Use the max dimension for square grid size
-
+                     pxLm.forEach(p => { fMinX = Math.min(fMinX, p.x); fMaxX = Math.max(fMaxX, p.x); fMinY = Math.min(fMinY, p.y); fMaxY = Math.max(fMaxY, p.y); });
+                     let fWidth = fMaxX - fMinX, fHeight = fMaxY - fMinY;
+                     let gridSize = Math.max(fWidth, fHeight);
                      if (gridSize > 0) {
-                         // Center the initial grid square over the face
-                         let fMidX = (fMinX + fMaxX) / 2;
-                         let fMidY = (fMinY + fMaxY) / 2;
-                         let gridStartX = fMidX - gridSize / 2;
-                         let gridStartY = fMidY - gridSize / 2;
-
-                         // Store this as the 'final' grid for drawing, as face grid isn't adjustable
-                         const faceGridRect = { x: gridStartX, y: gridStartY, size: gridSize };
-                         drawGridFromRect(faceGridRect); // Draw the extending lines directly
-                     } else {
-                         addComment(`Could not determine size for face grid for Face ${index + 1}.`, 'warning');
-                     }
+                         let fMidX = (fMinX + fMaxX) / 2, fMidY = (fMinY + fMaxY) / 2;
+                         let gridStartX = fMidX - gridSize / 2, gridStartY = fMidY - gridSize / 2;
+                         drawGridFromRect({ x: gridStartX, y: gridStartY, size: gridSize });
+                     } else { addComment(`Could not determine size for face grid for Face ${index + 1}.`, 'warning'); }
                  }
              });
          }
+        // --- Face Icon Click Handler --- MODIFIED with LOGGING ---
         function handleFaceIconClick() {
-             if (!isFaceLandmarkerInitialized || !faceLandmarker || !currentImageElement || iconFace.classList.contains('disabled')) return;
+            if (!isFaceLandmarkerInitialized || !faceLandmarker || !currentImageElement || iconFace.classList.contains('disabled')) return;
+            showFaceLandmarks = !showFaceLandmarks;
+            if (showFaceLandmarks) {
+                addComment('Showing face landmarks/grid...', 'info');
+                if (!lastFaceDetections) {
+                    addComment('Running face detection...', 'info');
+                    try {
+                        console.log(`Running face detection on image: ${currentImageElement.src.substring(0, 100)}...`); // Log source
+                        const results = faceLandmarker.detect(currentImageElement);
+                        const numFaces = results.faceLandmarks.length;
+                        if (numFaces > 0) {
+                            addComment(`Found ${numFaces} face(s).`, 'success');
+                            lastFaceDetections = results;
+                            if (numFaces > 1) {
+                                selectedReferenceFaceIndex = null;
+                                addComment(`Select face for grid.`, 'info');
+                                showFaceSelectionModal(numFaces);
+                                return; // Wait for selection
+                            } else {
+                                selectedReferenceFaceIndex = 0;
+                            }
+                        } else {
+                            addComment('No faces detected.', 'info');
+                            lastFaceDetections = null;
+                            showFaceLandmarks = false; // Turn off if no faces found
+                        }
+                    } catch (error) {
+                        addComment(`Face detection failed: ${error}`, 'error');
+                        console.error("Face detection error:", error); // Log the full error
+                        lastFaceDetections = null;
+                        showFaceLandmarks = false; // Turn off on error
+                    }
+                } else if (lastFaceDetections.faceLandmarks.length > 1 && selectedReferenceFaceIndex === null) {
+                     addComment(`Select face for grid.`, 'info');
+                     showFaceSelectionModal(lastFaceDetections.faceLandmarks.length);
+                     return; // Wait for selection
+                }
+                redrawCanvas(); // Redraw only if detection ran or selection exists
+            } else {
+                addComment('Hiding face landmarks/grid.', 'info');
+                hideFaceSelectionModal();
+                redrawCanvas(); // Redraw without landmarks
+            }
+            updateIconStates();
+        }
 
-             // **MODIFIED:** No longer resets manual grid state when toggling face landmarks.
-             // if (isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid) {
-             //     addComment('Disabling manual grid to show face grid.', 'info');
-             //     resetManualGridState(); // Turn off manual grid completely
-             // }
-
-             showFaceLandmarks = !showFaceLandmarks; // Toggle face landmarks visibility
-
-             if (showFaceLandmarks) {
-                 addComment('Showing face landmarks/grid...', 'info');
-                 if (!lastFaceDetections) { // Detect only if no prior data
-                     addComment('Running face detection...', 'info');
-                     try {
-                         const results = faceLandmarker.detect(currentImageElement); const numFaces = results.faceLandmarks.length;
-                         if (numFaces > 0) { addComment(`Found ${numFaces} face(s).`, 'success'); lastFaceDetections = results; if (numFaces > 1) { selectedReferenceFaceIndex = null; addComment(`Select face for grid.`, 'info'); showFaceSelectionModal(numFaces); return; } else { selectedReferenceFaceIndex = 0; } }
-                         else { addComment('No faces detected.', 'info'); lastFaceDetections = null; showFaceLandmarks = false; } // Turn off if no faces found
-                     } catch (error) { addComment(`Face detection failed: ${error.message || 'Unknown error'}`, 'error'); lastFaceDetections = null; showFaceLandmarks = false; } // Turn off on error
-                 } else if (lastFaceDetections.faceLandmarks.length > 1 && selectedReferenceFaceIndex === null) {
-                     // If data exists, but multiple faces and none selected, show modal again
-                      addComment(`Select face for grid.`, 'info');
-                      showFaceSelectionModal(lastFaceDetections.faceLandmarks.length);
-                      return; // Don't redraw yet, wait for selection
-                 }
-                 // Redraw immediately if detection wasn't needed or only 1 face/selection exists
-                 redrawCanvas();
-             } else {
-                 addComment('Hiding face landmarks/grid.', 'info');
-                 hideFaceSelectionModal();
-                 // Don't clear lastFaceDetections here, just hide
-                 redrawCanvas(); // Redraw without face landmarks/grid
-             }
-             updateIconStates();
-         }
 
         // --- Pose Detection & Drawing ---
-        // ... (Keep existing function: drawPoseLandmarksInternal - unchanged) ...
+        // ... (Unchanged: drawPoseLandmarksInternal) ...
         function drawPoseLandmarksInternal() {
              if (!draggablePoseLandmarks || draggablePoseLandmarks.length === 0 || !drawingUtils) return;
              const connections = PoseLandmarker.POSE_CONNECTIONS;
              if (!connections) { console.error("Pose connections not available."); return; }
-             // console.log("Drawing internal pose landmarks..."); // Less verbose logging
-             canvasCtx.strokeStyle = '#00FF00'; // Green for connections
-             canvasCtx.lineWidth = 2;
+             canvasCtx.strokeStyle = '#00FF00'; canvasCtx.lineWidth = 2;
              connections.forEach((c) => {
                  const sIdx = c.start, eIdx = c.end;
-                 // Skip connections involving the face landmarks (0-10)
-                 if (sIdx <= 10 || eIdx <= 10) {
-                     return;
-                 }
+                 if (sIdx <= 10 || eIdx <= 10) return; // Skip face
                  if (sIdx < draggablePoseLandmarks.length && eIdx < draggablePoseLandmarks.length) {
                      const sP = draggablePoseLandmarks[sIdx], eP = draggablePoseLandmarks[eIdx];
-                     // Optionally check visibility if needed: if (sP.visibility > 0.5 && eP.visibility > 0.5) { ... }
-                     canvasCtx.beginPath(); canvasCtx.moveTo(sP.x, sP.y);
-                     canvasCtx.lineTo(eP.x, eP.y); canvasCtx.stroke();
+                     canvasCtx.beginPath(); canvasCtx.moveTo(sP.x, sP.y); canvasCtx.lineTo(eP.x, eP.y); canvasCtx.stroke();
                  }
              });
-             canvasCtx.fillStyle = '#FF0000'; // Red for points
+             canvasCtx.fillStyle = '#FF0000';
              draggablePoseLandmarks.forEach((p, i) => {
-                 // Skip drawing points for the face (landmarks 0-10)
-                 if (i <= 10) {
-                     return; // Equivalent to 'continue' in a forEach callback
-                 }
-                 // Optionally check visibility: if (p.visibility > 0.5) { ... }
-                 canvasCtx.beginPath();
-                 canvasCtx.arc(p.x, p.y, pointRadius, 0, 2 * Math.PI);
-                 canvasCtx.fill();
-                 // Highlight the point being dragged
+                 if (i <= 10) return; // Skip face points
+                 canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, pointRadius, 0, 2 * Math.PI); canvasCtx.fill();
                  if (isDraggingPosePoint && i === draggedPointIndex) {
-                     canvasCtx.strokeStyle = '#0000FF'; // Blue outline for dragged point
-                     canvasCtx.lineWidth = 2;
-                     canvasCtx.stroke();
+                     canvasCtx.strokeStyle = '#0000FF'; canvasCtx.lineWidth = 2; canvasCtx.stroke();
                  }
              });
          }
+        // --- Pose Icon Click Handler --- MODIFIED with LOGGING ---
         function handlePoseIconClick() {
-             if (!isPoseLandmarkerInitialized || !poseLandmarker || !currentImageElement || iconPose.classList.contains('disabled')) return;
+            if (!isPoseLandmarkerInitialized || !poseLandmarker || !currentImageElement || iconPose.classList.contains('disabled')) return;
+            showPoseLandmarks = !showPoseLandmarks;
+            if (showPoseLandmarks) {
+                addComment('Showing pose landmarks...', 'info');
+                if (!lastPoseDetections) { // Detect only if no data
+                    addComment('Running pose detection...', 'info');
+                    try {
+                        console.log(`Running pose detection on image: ${currentImageElement.src.substring(0, 100)}...`); // Log source
+                        const results = poseLandmarker.detect(currentImageElement);
+                        if (results.landmarks.length > 0) {
+                            addComment(`Found ${results.landmarks.length} pose(s). Using first pose.`, 'success');
+                            lastPoseDetections = results;
+                            // --- Log initial calculation ---
+                            console.log(`Initial Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
+                            draggablePoseLandmarks = results.landmarks[0].map((lm, index) => {
+                                const pixelX = lm.x * overlayCanvas.width;
+                                const pixelY = lm.y * overlayCanvas.height;
+                                if (index === 0) { // Log nose point
+                                     console.log(`Initial Calc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                                }
+                                return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                            });
+                            // --- End Log ---
+                        } else {
+                            addComment('No poses detected.', 'info');
+                            lastPoseDetections = null;
+                            draggablePoseLandmarks = [];
+                            showPoseLandmarks = false; // Turn off if no poses
+                        }
+                    } catch (error) {
+                        addComment(`Pose detection failed: ${error}`, 'error');
+                        console.error("Pose detection error:", error); // Log the full error
+                        lastPoseDetections = null;
+                        draggablePoseLandmarks = [];
+                        showPoseLandmarks = false; // Turn off on error
+                    }
+                } else if (draggablePoseLandmarks.length === 0 && lastPoseDetections?.landmarks?.length > 0) {
+                    // Recalculate draggable points if they were cleared but data exists
+                    addComment('Restoring previous pose data...', 'info');
+                     console.log(`Restore Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
+                    draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
+                         const pixelX = lm.x * overlayCanvas.width;
+                         const pixelY = lm.y * overlayCanvas.height;
+                          if (index === 0) { // Log nose point
+                               console.log(`Restore Calc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                          }
+                         return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                    });
+                }
+                redrawCanvas(); // Redraw now
+            } else {
+                addComment('Hiding pose landmarks.', 'info');
+                redrawCanvas(); // Redraw without pose
+            }
+            updateIconStates();
+        }
 
-             // **MODIFIED:** No longer resets manual grid state when toggling pose landmarks.
-             // if (isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid) {
-             //     addComment('Disabling manual grid to show pose landmarks.', 'info');
-             //     resetManualGridState(); // Turn off manual grid completely
-             // }
-
-             showPoseLandmarks = !showPoseLandmarks; // Toggle
-
-             if (showPoseLandmarks) {
-                 addComment('Showing pose landmarks...', 'info');
-                 if (!lastPoseDetections) { // Detect only if no data
-                     addComment('Running pose detection...', 'info');
-                     try {
-                         const results = poseLandmarker.detect(currentImageElement);
-                         if (results.landmarks.length > 0) { addComment(`Found ${results.landmarks.length} pose(s). Using first pose.`, 'success'); lastPoseDetections = results; draggablePoseLandmarks = results.landmarks[0].map(lm => ({ x: lm.x * overlayCanvas.width, y: lm.y * overlayCanvas.height, visibility: lm.visibility })); }
-                         else { addComment('No poses detected.', 'info'); lastPoseDetections = null; draggablePoseLandmarks = []; showPoseLandmarks = false; } // Turn off if no poses
-                     } catch (error) { addComment(`Pose detection failed: ${error.message || 'Unknown error'}`, 'error'); lastPoseDetections = null; draggablePoseLandmarks = []; showPoseLandmarks = false; } // Turn off on error
-                 } else if (draggablePoseLandmarks.length === 0 && lastPoseDetections?.landmarks?.length > 0) {
-                     // Recalculate draggable points if they were cleared but data exists (e.g., after resize or reset)
-                     addComment('Restoring previous pose data...', 'info');
-                     draggablePoseLandmarks = lastPoseDetections.landmarks[0].map(lm => ({ x: lm.x * overlayCanvas.width, y: lm.y * overlayCanvas.height, visibility: lm.visibility }));
-                 }
-                 redrawCanvas(); // Redraw now
-             } else {
-                 addComment('Hiding pose landmarks.', 'info');
-                 // Don't clear draggablePoseLandmarks here when hiding, keep the modified positions
-                 redrawCanvas(); // Redraw without pose
-             }
-             updateIconStates();
-         }
 
         // --- Manual Grid Drawing & Adjustment ---
+        // ... (Unchanged: handleGridIconClick, drawManualGridSelection, drawAdjustableGridSquare, calculateAndUpdateHandlePositions, updateAdjustmentHandles, drawGridFromRect) ...
         function handleGridIconClick() {
             if (!currentImageElement || iconGrid.classList.contains('disabled')) return;
-
-            // --- Behavior depends on whether a grid is already confirmed ---
             if (finalManualGridRect) {
-                // --- Toggle Visibility of Confirmed Grid ---
                 showFinalManualGrid = !showFinalManualGrid;
                 addComment(showFinalManualGrid ? 'Showing confirmed manual grid.' : 'Hiding confirmed manual grid.', 'info');
-                // Ensure definition mode is off
-                isManualGridModeActive = false; // Turn off definition mode if toggling visibility
-                isDrawingManualGrid = false;
-                isAdjustingManualGrid = false;
-                manualGridRect = null;
-                adjustmentHandles = [];
-                updateAdjustmentHandles(); // Clear DOM handles if any were leftover
-
+                isManualGridModeActive = false; isDrawingManualGrid = false; isAdjustingManualGrid = false;
+                manualGridRect = null; adjustmentHandles = []; updateAdjustmentHandles();
             } else {
-                // --- Toggle Grid Definition Mode ---
-                isManualGridModeActive = !isManualGridModeActive; // Toggle the mode
-
+                isManualGridModeActive = !isManualGridModeActive;
                 if (isManualGridModeActive) {
                     addComment('Manual Grid Mode: Click and drag on the image to define the grid square.', 'info', 'User');
-                    // Deactivate other overlays temporarily
-                    showFaceLandmarks = false;
-                    showPoseLandmarks = false;
-                    selectedReferenceFaceIndex = null;
-                    hideFaceSelectionModal();
-                    // Reset any previous *definition* state
-                    resetManualGridState(false); // Don't reset final grid here (it's null anyway)
+                    showFaceLandmarks = false; showPoseLandmarks = false; selectedReferenceFaceIndex = null; hideFaceSelectionModal();
+                    resetManualGridState(false);
                 } else {
-                    // User clicked the icon to cancel whatever definition state they were in
                     if (isAdjustingManualGrid) { addComment('Manual grid adjustment cancelled.', 'info'); }
                     else if (isDrawingManualGrid) { addComment('Manual grid drawing cancelled.', 'info'); }
                     else { addComment('Exiting manual grid mode.', 'info'); }
-                    resetManualGridState(false); // Reset definition state
-                    // isManualGridModeActive is already false here because of the toggle above
+                    resetManualGridState(false);
                 }
             }
-
-            redrawCanvas(); // Update canvas (clear overlays, change cursor, show/hide grid)
-            updateIconStates(); // Update icon active states and titles
+            redrawCanvas(); updateIconStates();
         }
-
-        // Draws the dashed rectangle during the initial drag
         function drawManualGridSelection() {
             if (!isDrawingManualGrid) return;
-
-            const width = manualGridCurrentX - manualGridStartX;
-            const height = manualGridCurrentY - manualGridStartY;
-            // Make it a square based on the largest dimension from the start point
+            const width = manualGridCurrentX - manualGridStartX; const height = manualGridCurrentY - manualGridStartY;
             const size = Math.max(Math.abs(width), Math.abs(height));
-            const endX = manualGridStartX + (width >= 0 ? size : -size);
-            const endY = manualGridStartY + (height >= 0 ? size : -size);
-
-            canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.8)'; // Magenta dashed line
-            canvasCtx.lineWidth = 2;
-            canvasCtx.setLineDash([5, 5]); // Dashed line
+            const endX = manualGridStartX + (width >= 0 ? size : -size); const endY = manualGridStartY + (height >= 0 ? size : -size);
+            canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.8)'; canvasCtx.lineWidth = 2;
+            canvasCtx.setLineDash([5, 5]);
             canvasCtx.strokeRect(manualGridStartX, manualGridStartY, endX - manualGridStartX, endY - manualGridStartY);
-            canvasCtx.setLineDash([]); // Reset line dash
+            canvasCtx.setLineDash([]);
         }
-
-        // Draws the solid square during the adjustment phase
         function drawAdjustableGridSquare() {
             if (!manualGridRect || manualGridRect.size <= 0) return;
             const { x, y, size } = manualGridRect;
-            canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; // Solid Magenta
-            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; canvasCtx.lineWidth = 2;
             canvasCtx.strokeRect(x, y, size, size);
         }
-
-        // Calculates and updates the positions of adjustment handles based on manualGridRect
         function calculateAndUpdateHandlePositions() {
             adjustmentHandles = [];
-            if (!manualGridRect || !isAdjustingManualGrid) {
-                updateAdjustmentHandles(); // Ensure DOM handles are cleared if not adjusting
-                return;
-            }
-
-            const { x, y, size } = manualGridRect;
-            const halfSize = size / 2;
-
-            // Define handle types and their positions relative to the rect
-            const handleDefs = [
-                { type: 'tl', x: x, y: y }, { type: 'tr', x: x + size, y: y },
-                { type: 'bl', x: x, y: y + size }, { type: 'br', x: x + size, y: y + size },
-                { type: 'tm', x: x + halfSize, y: y }, { type: 'bm', x: x + halfSize, y: y + size },
-                { type: 'ml', x: x, y: y + halfSize }, { type: 'mr', x: x + size, y: y + halfSize }
+            if (!manualGridRect || !isAdjustingManualGrid) { updateAdjustmentHandles(); return; }
+            const { x, y, size } = manualGridRect; const halfSize = size / 2;
+            adjustmentHandles = [
+                { type: 'tl', x: x, y: y }, { type: 'tr', x: x + size, y: y }, { type: 'bl', x: x, y: y + size }, { type: 'br', x: x + size, y: y + size },
+                { type: 'tm', x: x + halfSize, y: y }, { type: 'bm', x: x + halfSize, y: y + size }, { type: 'ml', x: x, y: y + halfSize }, { type: 'mr', x: x + size, y: y + halfSize }
             ];
-
-            adjustmentHandles = handleDefs;
-            updateAdjustmentHandles(); // Update the DOM elements
+            updateAdjustmentHandles();
         }
-
-        // Updates the DOM elements for adjustment handles based on the adjustmentHandles array
         function updateAdjustmentHandles() {
-            adjustmentHandlesContainer.innerHTML = ''; // Clear existing handles
-
-            if (!isAdjustingManualGrid || !manualGridRect) {
-                return; // No handles if not adjusting
-            }
-
+            adjustmentHandlesContainer.innerHTML = '';
+            if (!isAdjustingManualGrid || !manualGridRect) return;
             adjustmentHandles.forEach(handle => {
                 const handleElement = document.createElement('div');
-                handleElement.classList.add('adjustment-handle');
-                handleElement.style.left = `${handle.x}px`;
-                handleElement.style.top = `${handle.y}px`;
-                handleElement.dataset.type = handle.type; // Store type for identification
-                // Pointer events are handled by CSS based on canvas class '.manual-grid-adjusting'
+                handleElement.className = 'adjustment-handle';
+                handleElement.style.left = `${handle.x}px`; handleElement.style.top = `${handle.y}px`;
+                handleElement.dataset.type = handle.type;
                 adjustmentHandlesContainer.appendChild(handleElement);
             });
         }
-
-
-        // Draws the final grid lines extending across the canvas
         function drawGridFromRect(gridRect) {
              if (!gridRect || gridRect.size <= 0) return;
-
              const { x: startX, y: startY, size } = gridRect;
-             const endX = startX + size;
-             const endY = startY + size;
-
-             const canvasWidth = overlayCanvas.width;
-             const canvasHeight = overlayCanvas.height;
-
-             // --- Draw Extending Grid Lines ---
+             const endX = startX + size; const endY = startY + size;
+             const canvasWidth = overlayCanvas.width; const canvasHeight = overlayCanvas.height;
              canvasCtx.lineWidth = 1;
 
              // Vertical Lines (Cyan)
              canvasCtx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-             let currentX = startX;
-             while (currentX < canvasWidth + size) { // Draw rightwards (extend one square beyond edge)
-                 if (currentX >= -size) { // Allow drawing slightly off-canvas left
-                     canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke();
-                 }
-                 if (size === 0) break; // Prevent infinite loop
-                 currentX += size;
-             }
-             currentX = startX - size; // Start one step left
-             while (currentX > -size) { // Draw leftwards (stop before going too far left)
-                  if (currentX < canvasWidth + size) { // Allow drawing slightly off-canvas right
-                      canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke();
-                  }
-                  if (size === 0) break; // Prevent infinite loop
-                  currentX -= size;
-             }
+             for (let currentX = startX; currentX < canvasWidth + size; currentX += size) { if (currentX >= -size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke(); } if (size === 0) break; }
+             for (let currentX = startX - size; currentX > -size; currentX -= size) { if (currentX < canvasWidth + size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke(); } if (size === 0) break; }
 
              // Horizontal Lines (Yellow)
              canvasCtx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-             let currentY = startY;
-             while (currentY < canvasHeight + size) { // Draw downwards
-                 if (currentY >= -size) {
-                     canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke();
-                 }
-                  if (size === 0) break;
-                 currentY += size;
-             }
-              currentY = startY - size; // Start one step up
-             while (currentY > -size) { // Draw upwards
-                  if (currentY < canvasHeight + size) {
-                      canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke();
-                  }
-                  if (size === 0) break;
-                  currentY -= size;
+             for (let currentY = startY; currentY < canvasHeight + size; currentY += size) { if (currentY >= -size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke(); } if (size === 0) break; }
+             for (let currentY = startY - size; currentY > -size; currentY -= size) { if (currentY < canvasHeight + size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke(); } if (size === 0) break; }
+
+             // Inner Thirds Lines
+             if (size > 0) {
+                 const thirdSize = size / 3;
+                 canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)'; // Green
+                 canvasCtx.beginPath(); canvasCtx.moveTo(startX + thirdSize, startY); canvasCtx.lineTo(startX + thirdSize, endY); canvasCtx.stroke();
+                 canvasCtx.beginPath(); canvasCtx.moveTo(startX + 2 * thirdSize, startY); canvasCtx.lineTo(startX + 2 * thirdSize, endY); canvasCtx.stroke();
+                 canvasCtx.strokeStyle = 'rgba(255, 0, 0, 0.7)'; // Red
+                 canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + thirdSize); canvasCtx.lineTo(endX, startY + thirdSize); canvasCtx.stroke();
+                 canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + 2 * thirdSize); canvasCtx.lineTo(endX, startY + 2 * thirdSize); canvasCtx.stroke();
              }
 
-             // --- Draw Inner Thirds Lines within the FIRST square ---
-             const thirdSize = size / 3;
-
-             // Vertical Thirds (Green)
-             canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
-             canvasCtx.beginPath(); canvasCtx.moveTo(startX + thirdSize, startY); canvasCtx.lineTo(startX + thirdSize, endY); canvasCtx.stroke();
-             canvasCtx.beginPath(); canvasCtx.moveTo(startX + 2 * thirdSize, startY); canvasCtx.lineTo(startX + 2 * thirdSize, endY); canvasCtx.stroke();
-
-             // Horizontal Thirds (Red)
-             canvasCtx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
-             canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + thirdSize); canvasCtx.lineTo(endX, startY + thirdSize); canvasCtx.stroke();
-             canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + 2 * thirdSize); canvasCtx.lineTo(endX, startY + 2 * thirdSize); canvasCtx.stroke();
-
-              // Draw outline of the defining square (optional, for clarity)
-             canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; // Solid Magenta
-             canvasCtx.lineWidth = 2;
+             // Defining square outline
+             canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; canvasCtx.lineWidth = 2;
              canvasCtx.strokeRect(startX, startY, size, size);
          }
 
-        // --- Drag and Drop Logic ---
+        // --- Mouse/Touch Interaction Logic ---
+        // ... (Unchanged: getMousePos, handleMouseDown, handleMouseMove, handleMouseUp) ...
         function getMousePos(canvas, evt) {
              const rect = canvas.getBoundingClientRect();
-             // Handle both mouse and touch events
              const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
              const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
              return { x: clientX - rect.left, y: clientY - rect.top };
          }
-
         function handleMouseDown(e) {
-            // Prevent default touch actions like scrolling IF interacting with canvas elements
-            const pos = getMousePos(overlayCanvas, e);
-            let interactionStarted = false; // Flag to check if any interaction begins
-
+            const pos = getMousePos(overlayCanvas, e); let interactionStarted = false;
             if (isAdjustingManualGrid) {
-                // --- Check for Handle Drag ---
                 let handleClicked = false;
                 for (const handle of adjustmentHandles) {
-                    const dx = pos.x - handle.x;
-                    const dy = pos.y - handle.y;
+                    const dx = pos.x - handle.x; const dy = pos.y - handle.y;
                     if (dx * dx + dy * dy < handleHitRadius * handleHitRadius) {
-                        draggedHandleType = handle.type;
-                        isDraggingGridSquare = false; // Ensure not dragging square
-                        gridDragStartX = manualGridRect.x; // Keep track of original position/size
-                        gridDragStartY = manualGridRect.y;
-                        manualGridCurrentX = pos.x; // Store initial mouse pos for drag delta
-                        manualGridCurrentY = pos.y;
-                        handleClicked = true;
-                        interactionStarted = true; // Interaction started
-                        // console.log(`Dragging handle ${draggedHandleType}`);
-                        break;
+                        draggedHandleType = handle.type; isDraggingGridSquare = false;
+                        gridDragStartX = manualGridRect.x; gridDragStartY = manualGridRect.y;
+                        manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
+                        handleClicked = true; interactionStarted = true; break;
                     }
                 }
-
-                // --- Check for Square Drag (if no handle was clicked) ---
                 if (!handleClicked && manualGridRect) {
                     const { x, y, size } = manualGridRect;
                     if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) {
-                        isDraggingGridSquare = true;
-                        draggedHandleType = null; // Ensure not dragging handle
-                        dragOffsetX = pos.x - x; // Offset from top-left corner
-                        dragOffsetY = pos.y - y;
-                        interactionStarted = true; // Interaction started
-                        // console.log("Dragging square");
+                        isDraggingGridSquare = true; draggedHandleType = null;
+                        dragOffsetX = pos.x - x; dragOffsetY = pos.y - y;
+                        interactionStarted = true;
                     }
                 }
-
-            } else if (isManualGridModeActive && !isDrawingManualGrid) { // Check if mode is active and not already drawing
-                // --- Start Drawing Manual Grid ---
+            } else if (isManualGridModeActive && !isDrawingManualGrid) {
                 isDrawingManualGrid = true;
-                manualGridStartX = pos.x;
-                manualGridStartY = pos.y;
-                manualGridCurrentX = pos.x;
-                manualGridCurrentY = pos.y;
-                manualGridRect = null; // Clear previous rect
-                interactionStarted = true; // Interaction started
-                console.log(`Manual Grid Start Draw: (${manualGridStartX.toFixed(1)}, ${manualGridStartY.toFixed(1)})`); // DEBUG LOG
-
+                manualGridStartX = pos.x; manualGridStartY = pos.y;
+                manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
+                manualGridRect = null; interactionStarted = true;
             } else if (showPoseLandmarks) {
-                // --- Check for Dragging Pose Landmarks ---
                 for (let i = 0; i < draggablePoseLandmarks.length; i++) {
-                    if (i <= 10) continue; // Only body points
-                    const p = draggablePoseLandmarks[i];
+                    if (i <= 10) continue; const p = draggablePoseLandmarks[i];
                     const dx = pos.x - p.x; const dy = pos.y - p.y;
                     if (dx * dx + dy * dy < hitRadius * hitRadius) {
-                        isDraggingPosePoint = true;
-                        draggedPointIndex = i;
+                        isDraggingPosePoint = true; draggedPointIndex = i;
                         dragOffsetX = dx; dragOffsetY = dy;
-                        interactionStarted = true; // Interaction started
-                        // console.log(`Dragging pose point ${i}`);
-                        break; // Exit after finding a point
+                        interactionStarted = true; break;
                     }
                 }
             }
-
-            // Prevent default only if an interaction actually started
-            if (interactionStarted) {
-                if (e.touches) e.preventDefault();
-                redrawCanvas(); // Update cursor/visuals
-            }
+            if (interactionStarted) { if (e.touches) e.preventDefault(); redrawCanvas(); }
         }
-
         function handleMouseMove(e) {
-             // Prevent default touch actions like scrolling *only if dragging*
              const isDragging = draggedHandleType || isDraggingGridSquare || isDrawingManualGrid || isDraggingPosePoint;
-             if (isDragging) {
-                 if (e.touches) e.preventDefault();
-             }
-
+             if (isDragging && e.touches) e.preventDefault();
              const pos = getMousePos(overlayCanvas, e);
-
-             // Reset hover states before checking
-             isHoveringPosePoint = false;
-             isHoveringGridHandle = false;
-             isHoveringGridSquare = false;
+             isHoveringPosePoint = false; isHoveringGridHandle = false; isHoveringGridSquare = false;
 
              if (draggedHandleType && isAdjustingManualGrid && manualGridRect) {
-                 // --- Dragging an Adjustment Handle ---
-                 const currentX = pos.x;
-                 const currentY = pos.y;
-                 let { x, y, size } = manualGridRect; // Get current rect state
-                 let newX = x, newY = y, newSize = size;
-                 const rightEdge = x + size;
-                 const bottomEdge = y + size;
-
-                 // Calculate new dimensions based on the handle being dragged
+                 const currentX = pos.x; const currentY = pos.y;
+                 let { x, y, size } = manualGridRect; let newX = x, newY = y, newSize = size;
+                 const rightEdge = x + size; const bottomEdge = y + size;
                  switch (draggedHandleType) {
-                     // Corners (maintain square by largest delta from opposite corner)
-                     case 'tl':
-                         const deltaX_tl = rightEdge - currentX; const deltaY_tl = bottomEdge - currentY;
-                         newSize = Math.max(deltaX_tl, deltaY_tl, MIN_GRID_SIZE);
-                         newX = rightEdge - newSize; newY = bottomEdge - newSize;
-                         break;
-                     case 'tr':
-                         const deltaX_tr = currentX - x; const deltaY_tr = bottomEdge - currentY;
-                         newSize = Math.max(deltaX_tr, deltaY_tr, MIN_GRID_SIZE);
-                         newY = bottomEdge - newSize; // newX = x;
-                         break;
-                     case 'bl':
-                         const deltaX_bl = rightEdge - currentX; const deltaY_bl = currentY - y;
-                         newSize = Math.max(deltaX_bl, deltaY_bl, MIN_GRID_SIZE);
-                         newX = rightEdge - newSize; // newY = y;
-                         break;
-                     case 'br':
-                         const deltaX_br = currentX - x; const deltaY_br = currentY - y;
-                         newSize = Math.max(deltaX_br, deltaY_br, MIN_GRID_SIZE);
-                         // newX = x; newY = y;
-                         break;
-                     // Edges (resize based on perpendicular distance, adjust position to keep centered)
-                     case 'tm':
-                         newSize = Math.max(bottomEdge - currentY, MIN_GRID_SIZE);
-                         const sizeChangeY_tm = size - newSize;
-                         newX = x + sizeChangeY_tm / 2; newY = bottomEdge - newSize;
-                         break;
-                     case 'bm':
-                         newSize = Math.max(currentY - y, MIN_GRID_SIZE);
-                         const sizeChangeY_bm = size - newSize;
-                         newX = x + sizeChangeY_bm / 2; // newY = y;
-                         break;
-                     case 'ml':
-                         newSize = Math.max(rightEdge - currentX, MIN_GRID_SIZE);
-                         const sizeChangeX_ml = size - newSize;
-                         newX = rightEdge - newSize; newY = y + sizeChangeX_ml / 2;
-                         break;
-                     case 'mr':
-                         newSize = Math.max(currentX - x, MIN_GRID_SIZE);
-                         const sizeChangeX_mr = size - newSize;
-                         newY = y + sizeChangeX_mr / 2; // newX = x;
-                         break;
+                     case 'tl': const dX_tl = rightEdge - currentX; const dY_tl = bottomEdge - currentY; newSize = Math.max(dX_tl, dY_tl, MIN_GRID_SIZE); newX = rightEdge - newSize; newY = bottomEdge - newSize; break;
+                     case 'tr': const dX_tr = currentX - x; const dY_tr = bottomEdge - currentY; newSize = Math.max(dX_tr, dY_tr, MIN_GRID_SIZE); newY = bottomEdge - newSize; break;
+                     case 'bl': const dX_bl = rightEdge - currentX; const dY_bl = currentY - y; newSize = Math.max(dX_bl, dY_bl, MIN_GRID_SIZE); newX = rightEdge - newSize; break;
+                     case 'br': const dX_br = currentX - x; const dY_br = currentY - y; newSize = Math.max(dX_br, dY_br, MIN_GRID_SIZE); break;
+                     case 'tm': newSize = Math.max(bottomEdge - currentY, MIN_GRID_SIZE); const sCY_tm = size - newSize; newX = x + sCY_tm / 2; newY = bottomEdge - newSize; break;
+                     case 'bm': newSize = Math.max(currentY - y, MIN_GRID_SIZE); const sCY_bm = size - newSize; newX = x + sCY_bm / 2; break;
+                     case 'ml': newSize = Math.max(rightEdge - currentX, MIN_GRID_SIZE); const sCX_ml = size - newSize; newX = rightEdge - newSize; newY = y + sCX_ml / 2; break;
+                     case 'mr': newSize = Math.max(currentX - x, MIN_GRID_SIZE); const sCX_mr = size - newSize; newY = y + sCX_mr / 2; break;
                  }
-
-                 manualGridRect = { x: newX, y: newY, size: newSize }; // Update the main rect
-                 calculateAndUpdateHandlePositions(); // Recalculate handle positions
-                 requestAnimationFrame(redrawCanvas);
-
+                 manualGridRect = { x: newX, y: newY, size: newSize };
+                 calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
              } else if (isDraggingGridSquare && isAdjustingManualGrid && manualGridRect) {
-                  // --- Dragging the Whole Square ---
-                  manualGridRect.x = pos.x - dragOffsetX;
-                  manualGridRect.y = pos.y - dragOffsetY;
-                  // Clamp square position to canvas bounds
+                  manualGridRect.x = pos.x - dragOffsetX; manualGridRect.y = pos.y - dragOffsetY;
                   manualGridRect.x = Math.max(0, Math.min(overlayCanvas.width - manualGridRect.size, manualGridRect.x));
                   manualGridRect.y = Math.max(0, Math.min(overlayCanvas.height - manualGridRect.size, manualGridRect.y));
-                  calculateAndUpdateHandlePositions(); // Update handle positions as square moves
-                  requestAnimationFrame(redrawCanvas);
-
+                  calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
              } else if (isDrawingManualGrid) {
-                 // --- Update Initial Grid Draw ---
-                 manualGridCurrentX = pos.x;
-                 manualGridCurrentY = pos.y;
-                 requestAnimationFrame(redrawCanvas); // Redraw the temporary square
-
+                 manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
+                 requestAnimationFrame(redrawCanvas);
              } else if (isDraggingPosePoint && draggedPointIndex !== -1) {
-                 // --- Drag Pose Landmark ---
                  const dP = draggablePoseLandmarks[draggedPointIndex];
                  dP.x = pos.x - dragOffsetX; dP.y = pos.y - dragOffsetY;
-                 dP.x = Math.max(0, Math.min(overlayCanvas.width, dP.x));
-                 dP.y = Math.max(0, Math.min(overlayCanvas.height, dP.y));
-                 requestAnimationFrame(redrawCanvas); // Redraw pose
-
+                 dP.x = Math.max(0, Math.min(overlayCanvas.width, dP.x)); dP.y = Math.max(0, Math.min(overlayCanvas.height, dP.y));
+                 requestAnimationFrame(redrawCanvas);
              } else {
-                  // --- Update Cursors on Hover (when not dragging) ---
                   if (showPoseLandmarks && !definingManualGrid) {
-                      // Check pose hover only if pose is shown and grid is not being defined
-                      for (let i = 0; i < draggablePoseLandmarks.length; i++) {
-                          if (i <= 10) continue;
-                          const p = draggablePoseLandmarks[i];
-                          const dx = pos.x - p.x; const dy = pos.y - p.y;
-                          if (dx * dx + dy * dy < hitRadius * hitRadius) {
-                              isHoveringPosePoint = true;
-                              break;
-                          }
-                      }
+                      for (let i = 0; i < draggablePoseLandmarks.length; i++) { if (i <= 10) continue; const p = draggablePoseLandmarks[i]; const dx = pos.x - p.x; const dy = pos.y - p.y; if (dx * dx + dy * dy < hitRadius * hitRadius) { isHoveringPosePoint = true; break; } }
                   }
-
                   if (isAdjustingManualGrid && manualGridRect) {
-                      // Check handle hover first
-                      for (const handle of adjustmentHandles) {
-                          const dx = pos.x - handle.x; const dy = pos.y - handle.y;
-                          if (dx * dx + dy * dy < handleHitRadius * handleHitRadius) {
-                              isHoveringGridHandle = true;
-                              break;
-                          }
-                      }
-                      // Check square hover only if not hovering a handle
-                      if (!isHoveringGridHandle) {
-                          const { x, y, size } = manualGridRect;
-                          if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) {
-                              isHoveringGridSquare = true;
-                          }
-                      }
+                      for (const handle of adjustmentHandles) { const dx = pos.x - handle.x; const dy = pos.y - handle.y; if (dx * dx + dy * dy < handleHitRadius * handleHitRadius) { isHoveringGridHandle = true; break; } }
+                      if (!isHoveringGridHandle) { const { x, y, size } = manualGridRect; if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) { isHoveringGridSquare = true; } }
                   }
-                  // Update icon states which will set the correct canvas class/cursor
                   updateIconStates();
              }
          }
-
-
         function handleMouseUp(e) {
             if (draggedHandleType || isDraggingGridSquare) {
-                // --- Finish Dragging Handle or Square ---
-                // console.log(`Finished dragging ${draggedHandleType ? 'handle ' + draggedHandleType : 'square'}`);
-                draggedHandleType = null;
-                isDraggingGridSquare = false;
-                redrawCanvas(); // Redraw in final state for this adjustment step
-
+                draggedHandleType = null; isDraggingGridSquare = false; redrawCanvas();
             } else if (isDrawingManualGrid) {
-                // --- Finish Initial Grid Draw -> Enter Adjustment Mode ---
-                isDrawingManualGrid = false; // Stop drawing phase
-                const width = manualGridCurrentX - manualGridStartX;
-                const height = manualGridCurrentY - manualGridStartY;
-                let size = Math.max(Math.abs(width), Math.abs(height)); // Make it square
-
+                isDrawingManualGrid = false;
+                const width = manualGridCurrentX - manualGridStartX; const height = manualGridCurrentY - manualGridStartY;
+                let size = Math.max(Math.abs(width), Math.abs(height));
                 if (size >= MIN_GRID_SIZE) {
-                    // Adjust start point if width/height were negative
                     const finalStartX = width >= 0 ? manualGridStartX : manualGridStartX - size;
                     const finalStartY = height >= 0 ? manualGridStartY : manualGridStartY - size;
-
                     manualGridRect = { x: finalStartX, y: finalStartY, size: size };
-                    isAdjustingManualGrid = true; // Enter adjustment mode
+                    isAdjustingManualGrid = true;
                     addComment(`Grid square drawn. Adjust size/position and click Confirm.`, 'info', 'User');
-                    console.log(`Initial Grid Rect Defined:`, manualGridRect); // DEBUG LOG
-                    calculateAndUpdateHandlePositions(); // Calculate handle positions
+                    calculateAndUpdateHandlePositions();
                 } else {
                     addComment(`Manual grid square too small (min ${MIN_GRID_SIZE}px), cancelled.`, 'warning');
-                    manualGridRect = null;
-                    isManualGridModeActive = false; // Exit mode if draw was too small
+                    manualGridRect = null; isManualGridModeActive = false;
                 }
-                redrawCanvas(); // Draw the adjustable square and handles (or nothing if cancelled)
-                updateIconStates(); // Show confirm button, update icons
-
+                redrawCanvas(); updateIconStates();
             } else if (isDraggingPosePoint) {
-                // --- Finish Dragging Pose Landmark ---
-                // console.log(`Finished dragging pose point ${draggedPointIndex}`);
-                isDraggingPosePoint = false;
-                draggedPointIndex = -1;
+                isDraggingPosePoint = false; draggedPointIndex = -1;
                 dragOffsetX = 0; dragOffsetY = 0;
-                redrawCanvas(); // Redraw to remove highlight
-                updateIconStates(); // Update cursor
+                redrawCanvas(); updateIconStates();
             }
         }
 
         // --- Confirm Grid Button Handler ---
+        // ... (Unchanged: handleConfirmGrid) ...
         function handleConfirmGrid() {
             if (!isAdjustingManualGrid || !manualGridRect) return;
-
             addComment('Manual grid confirmed.', 'success', 'User');
-            finalManualGridRect = { ...manualGridRect }; // Store the final dimensions
-            showFinalManualGrid = true; // Set flag to display the final grid
+            finalManualGridRect = { ...manualGridRect };
+            showFinalManualGrid = true;
+            isAdjustingManualGrid = false; isManualGridModeActive = false;
+            resetManualGridState(false);
+            redrawCanvas(); updateIconStates();
+        }
 
-            // Exit adjustment mode
-            isAdjustingManualGrid = false; // Exit adjustment phase
-            isManualGridModeActive = false; // Exit overall definition mode
-            resetManualGridState(false); // Reset definition state (rect, handles, etc.), keep final grid
-
-            redrawCanvas(); // Redraw to show the final grid lines
-            updateIconStates(); // Hide confirm button, update icons/cursors
+        // --- Drag and Drop Event Handlers for Body ---
+        // ... (Unchanged: handleDragOver, handleDragLeave, handleDrop) ...
+        function handleDragOver(event) {
+            event.preventDefault(); event.stopPropagation();
+            const dt = event.dataTransfer;
+            if (dt.types.includes('Files') || dt.types.includes('text/uri-list') || dt.types.includes('text/html')) {
+                 bodyElement.classList.add('dragover'); dt.dropEffect = 'copy';
+            } else { dt.dropEffect = 'none'; }
+        }
+        function handleDragLeave(event) {
+            event.preventDefault(); event.stopPropagation();
+            if (!bodyElement.contains(event.relatedTarget)) { bodyElement.classList.remove('dragover'); }
+        }
+        function handleDrop(event) {
+            event.preventDefault(); event.stopPropagation(); bodyElement.classList.remove('dragover');
+            resetCommonState(); // Reset state *before* processing drop
+            const dt = event.dataTransfer; const files = dt.files; let processed = false;
+            if (files.length > 0) {
+                for (let i = 0; i < files.length; i++) { if (files[i].type.startsWith('image/')) { processImageFile(files[i]); processed = true; break; } }
+            }
+            if (!processed && dt.types.includes('text/uri-list')) {
+                const uriList = dt.getData('text/uri-list'); const lines = uriList.split('\n');
+                for(const line of lines) { const url = line.trim(); if (url && !url.startsWith('#') && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(url)) { processImageUrl(url); processed = true; break; } }
+                if (!processed) { console.log("URI List found, but no valid image URL detected:", uriList); }
+            }
+            if (!processed && dt.types.includes('text/html')) {
+                const html = dt.getData('text/html');
+                try { const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; const imgElement = tempDiv.querySelector('img'); if (imgElement?.src) { processImageUrl(imgElement.src); processed = true; } else { console.log("HTML found, but no <img> tag with src detected:", html); } }
+                catch (e) { console.error("Error parsing dropped HTML:", e); }
+            }
+            if (!processed) {
+                addComment('Could not find a valid image file or URL in the dropped item.', 'error');
+                resetFullPreview(); // Ensure UI resets if drop fails
+            }
         }
 
 
-        // --- Event Listeners Setup ---
-        imageUpload.addEventListener('change', handleImageUpload);
+        // --- Event Listeners Setup --- MODIFIED ---
+        imageUpload.addEventListener('change', handleFileInputChange);
         iconFace.addEventListener('click', handleFaceIconClick);
         iconPose.addEventListener('click', handlePoseIconClick);
         iconGrid.addEventListener('click', handleGridIconClick);
-        iconRestart.addEventListener('click', () => { if (currentImageElement) clearOverlays(); });
+        iconRestart.addEventListener('click', () => { if (currentImageElement || !imagePreviewContainer.classList.contains('hidden')) resetFullPreview(); });
         confirmGridButton.addEventListener('click', handleConfirmGrid);
         cancelModalButton.addEventListener('click', () => { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); });
         faceSelectionModal.addEventListener('click', (event) => { if (event.target === faceSelectionModal) { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); } });
 
-        // Drag and Drop / Touch Listeners for Canvas
+        // External New Upload Button Listener
+        newUploadButtonExt.addEventListener('click', () => {
+            imageUpload.click(); // Trigger the hidden file input
+        });
+
+        // Canvas Listeners
         overlayCanvas.addEventListener('mousedown', handleMouseDown);
         overlayCanvas.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp); // Listen on window for mouseup to catch drags outside canvas
-        overlayCanvas.addEventListener('touchstart', handleMouseDown, { passive: false }); // passive: false to allow preventDefault
+        window.addEventListener('mouseup', handleMouseUp);
+        overlayCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
         overlayCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
-        window.addEventListener('touchend', handleMouseUp); // Listen on window for touchend
-        window.addEventListener('touchcancel', handleMouseUp); // Listen on window for touchcancel
+        window.addEventListener('touchend', handleMouseUp);
+        window.addEventListener('touchcancel', handleMouseUp);
+
+        // Body Drag/Drop Listeners
+        bodyElement.addEventListener('dragover', handleDragOver);
+        bodyElement.addEventListener('dragleave', handleDragLeave);
+        bodyElement.addEventListener('drop', handleDrop);
 
         // Window Resize Listener
-        let resizeTimeout; window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { if (currentImageElement && !imagePreviewContainer.classList.contains('hidden')) { console.log("Window resized, recalculating canvas..."); resizeCanvasToImage(); } }, 150); });
+        let resizeTimeout; window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { if (currentImageElement && !imagePreviewContainer.classList.contains('hidden')) { resizeCanvasToImage(); } }, 150); });
 
         // --- Initial Page Load Setup ---
         initializeApp();
