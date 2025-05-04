@@ -791,12 +791,7 @@
                  draggablePoseLandmarks = [];
              }
 
-             // Manual grid coordinates are invalidated on resize. Reset grid state.
-             if (isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid || finalManualGridRect) {
-                 addComment('Canvas resized. Manual grid coordinates reset. Redraw if needed.', 'warning');
-                 resetManualGridState(true); // Full reset including confirmed grid
-                 isManualGridModeActive = false; // Ensure mode is off after reset due to resize
-             }
+        
 
              redrawCanvas(); // Redraw based on current visibility flags
              updateIconStates(); // Ensure icons/buttons are correct
