@@ -171,13 +171,16 @@
 
          /* External New Upload Button Styling */
          #newUploadButtonExt {
-             cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+             cursor: pointer; display: none; align-items: center; justify-content: center;
              padding: 0.75rem 1.5rem; border: 1px solid transparent; font-size: 1rem;
              font-weight: 500; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-             color: white; background-color: #4f46e5; /* bg-indigo-600 */
+             color: white; background-color: #4f46e5; 
              transition: background-color 0.15s ease-in-out; margin-bottom: 1.5rem; width: auto;
          }
-         #newUploadButtonExt:hover { background-color: #4338ca; /* hover:bg-indigo-700 */ }
+         #newUploadButtonExt:not(.hidden) {
+             display: inline-flex;
+         }
+         #newUploadButtonExt:hover { background-color: #4338ca; }
          #newUploadButtonExt:focus {
              outline: 2px solid transparent; outline-offset: 2px;
              box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
@@ -266,11 +269,14 @@
             <ul class="text-xs text-gray-500 text-left list-disc pl-5 space-y-1">
                 <li>
                     <span class="font-medium">Privacy Note:</span>
-                    Your images are processed directly in your browser using MediaPipe library.
+                    Your images are processed directly in your browser using MediaPipe library. 
                 </li>
                 <li>
                     <span class="font-medium">Terms of Use:</span>
-                    This tool is provided 'as-is' without warranty for creative use. Use responsibly.
+                    This tool is provided 'as-is' without warranty for creative use. <a href="https://ai.google.dev/edge/mediapipe/legal/tos" target="_blank" rel="noopener noreferrer" class="underline text-indigo-600 hover:text-indigo-800 ml-1">MediaPipe Terms apply.</a> Use responsibly.<br>
+                </li>
+                <li>
+                    <span class="font-medium ">Note:</span> By uploading an image you agree to our terms and policy.
                 </li>
             </ul>
         </div>
@@ -632,17 +638,38 @@
         // Clears overlays and detection data, including manual grid
         function clearOverlays() {
             addComment('Clearing overlays and detection data...', 'info', 'sketchit');
-            lastFaceDetections = null;
-            lastPoseDetections = null;
-            draggablePoseLandmarks = [];
-            showFaceLandmarks = false;
-            showPoseLandmarks = false;
-            selectedReferenceFaceIndex = null;
-            hideFaceSelectionModal();
-            resetManualGridState(true);
-            isManualGridModeActive = false;
+            // Only clear overlays that are currently active, not the loaded image or preview UI
+            let overlaysCleared = false;
+            if (showFaceLandmarks ) {
+                showFaceLandmarks = false;
+                lastFaceDetections = null;
+                selectedReferenceFaceIndex = null;
+                hideFaceSelectionModal();
+                overlaysCleared = true;
+            }
+            if (showPoseLandmarks) {
+                showPoseLandmarks = false;
+                draggablePoseLandmarks = [];
+                lastPoseDetections = null;
+                overlaysCleared = true;
+            }
+            // Manual grid overlays
+            if (
+                showFinalManualGrid || // If the confirmed manual grid is being shown
+                isManualGridModeActive || // If manual grid mode is active (user can start drawing)
+                isDrawingManualGrid || // If user is currently drawing the manual grid
+                isAdjustingManualGrid || // If user is adjusting the manual grid
+                finalManualGridRect // If a confirmed manual grid rectangle exists
+            ) {
+                resetManualGridState(true);
+                isManualGridModeActive = false;
+                overlaysCleared = true;
+            }
             redrawCanvas();
             updateIconStates();
+            if (!overlaysCleared) {
+                addComment('No overlays to clear.', 'info');
+            }
         }
 
         // --- UI State & Icon Updates ---
@@ -996,7 +1023,6 @@
                 isManualGridModeActive = !isManualGridModeActive;
                 if (isManualGridModeActive) {
                     addComment('Manual Grid Mode: Click and drag on the image to define the grid square.', 'info', 'User');
-                    showFaceLandmarks = false; showPoseLandmarks = false; selectedReferenceFaceIndex = null; hideFaceSelectionModal();
                     resetManualGridState(false);
                 } else {
                     if (isAdjustingManualGrid) { addComment('Manual grid adjustment cancelled.', 'info'); }
@@ -1005,7 +1031,7 @@
                     resetManualGridState(false);
                 }
             }
-            redrawCanvas(); updateIconStates();
+            updateIconStates();
         }
         function drawManualGridSelection() {
             if (!isDrawingManualGrid) return;
@@ -1250,7 +1276,7 @@
         iconFace.addEventListener('click', handleFaceIconClick);
         iconPose.addEventListener('click', handlePoseIconClick);
         iconGrid.addEventListener('click', handleGridIconClick);
-        iconRestart.addEventListener('click', () => { if (currentImageElement || !imagePreviewContainer.classList.contains('hidden')) resetFullPreview(); });
+        iconRestart.addEventListener('click', () => { if (currentImageElement || !imagePreviewContainer.classList.contains('hidden')) clearOverlays(); });
         confirmGridButton.addEventListener('click', handleConfirmGrid);
         cancelModalButton.addEventListener('click', () => { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); });
         faceSelectionModal.addEventListener('click', (event) => { if (event.target === faceSelectionModal) { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); } });
