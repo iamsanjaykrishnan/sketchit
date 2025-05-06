@@ -37,7 +37,7 @@
         #imageUpload { display: none; }
 
         /* Style for the image preview container */
-        .instagram-card { max-width: 480px; width: 100%; }
+        .display-card { max-width: 480px; width: 100%; }
 
         /* Container for image and canvas */
         .image-display-container {
@@ -47,7 +47,7 @@
         }
 
         /* Ensure image fits well */
-        .instagram-card img#imagePreview {
+        .display-card img#imagePreview {
             display: block; max-width: 100%; max-height: 100%;
             height: auto; width: auto; object-fit: contain;
         }
@@ -227,7 +227,7 @@
              Upload New Image
         </button>
         <div id="imagePreviewContainer"
-            class="instagram-card bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden hidden mx-auto">
+            class="display-card bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden hidden mx-auto">
             <div class="p-3 border-b border-gray-200 flex items-center justify-between space-x-3">
                  <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -734,95 +734,147 @@
             updateAdjustmentHandles();
         }
 
-        // --- Canvas Resizing --- REFINED with LOGGING ---
-         function resizeCanvasToImage() {
-             // Ensure elements exist and image has loaded dimensions
-             if (!currentImageElement || !overlayCanvas || !imagePreviewContainer || !currentImageElement.naturalWidth || currentImageElement.naturalWidth === 0) {
-                 console.warn("Resize skipped: Missing elements or zero natural width.");
-                 return;
-             }
-             const img = currentImageElement;
-             const canvas = overlayCanvas;
-             const container = img.parentElement; // Direct parent: image-display-container
+// --- Canvas Resizing --- REFINED with LOGGING & FIXES ---
+function resizeCanvasToImage() {
+            // Ensure elements exist and image has loaded dimensions
+            if (!currentImageElement || !overlayCanvas || !imagePreviewContainer || !currentImageElement.naturalWidth || currentImageElement.naturalWidth === 0) {
+                console.warn("Resize skipped: Missing elements or zero natural width.");
+                return;
+            }
 
-             // Use the offsetWidth/Height of the container which has aspect-ratio CSS
-             const cW = container.offsetWidth;
-             const cH = container.offsetHeight; // This should respect the aspect-ratio: 1/1
+            // Capture old canvas drawing surface dimensions BEFORE they are changed
+            const oldCanvasDrawingWidth = overlayCanvas.width;
+            const oldCanvasDrawingHeight = overlayCanvas.height;
 
-             const imgW = img.naturalWidth;
-             const imgH = img.naturalHeight;
+            const img = currentImageElement;
+            const canvas = overlayCanvas;
+            const container = img.parentElement; // Direct parent: image-display-container
 
-             // Check for valid dimensions
-             if (cW <= 0 || cH <= 0 || imgW <= 0 || imgH <= 0) {
-                 console.warn(`Resize skipped: Invalid dimensions detected - Container: ${cW}x${cH}, Image: ${imgW}x${imgH}`);
-                 return;
-             }
+            // Use the offsetWidth/Height of the container which has aspect-ratio CSS
+            const cW = container.offsetWidth;
+            const cH = container.offsetHeight; // This should respect the aspect-ratio: 1/1
 
-             console.log(`Resize Start: Container W/H: ${cW}x${cH}, Image Natural W/H: ${imgW}x${imgH}`);
+            const imgW = img.naturalWidth;
+            const imgH = img.naturalHeight;
 
-             const imgRatio = imgW / imgH;
-             let rW, rH, oX, oY;
+            // Check for valid dimensions
+            if (cW <= 0 || cH <= 0 || imgW <= 0 || imgH <= 0) {
+                console.warn(`Resize skipped: Invalid dimensions detected - Container: ${cW}x${cH}, Image: ${imgW}x${imgH}`);
+                return;
+            }
 
-             // Calculate the rendered image size within the container based on object-fit: contain
-             // The container is square (aspect-ratio: 1/1)
-             if (imgRatio > 1) { // Image is wider than tall
-                 rW = cW; // Image fills container width
-                 rH = cW / imgRatio; // Height is calculated based on image ratio
-                 oX = 0;
-                 oY = (cH - rH) / 2; // Center vertically
-             } else { // Image is taller than wide or square
-                 rH = cH; // Image fills container height
-                 rW = cH * imgRatio; // Width is calculated based on image ratio
-                 oY = 0;
-                 oX = (cW - rW) / 2; // Center horizontally
-             }
+            console.log(`Resize Start: Container W/H: ${cW}x${cH}, Image Natural W/H: ${imgW}x${imgH}, Old Canvas Draw W/H: ${oldCanvasDrawingWidth}x${oldCanvasDrawingHeight}`);
 
-             // Ensure calculated dimensions are valid numbers
-             if (isNaN(rW) || isNaN(rH) || isNaN(oX) || isNaN(oY)) {
-                 console.error("Resize Error: Calculated NaN values.", {rW, rH, oX, oY});
-                 return;
-             }
+            const imgRatio = imgW / imgH;
+            let rW, rH, oX, oY;
 
-             console.log(`Resize Calculated: Rendered Img W/H: ${rW.toFixed(1)}x${rH.toFixed(1)}, Offset X/Y: ${oX.toFixed(1)}x${oY.toFixed(1)}`);
+            // Calculate the rendered image size within the container based on object-fit: contain
+            // The container is square (aspect-ratio: 1/1)
+            if (imgRatio > 1) { // Image is wider than tall
+                rW = cW; // Image fills container width
+                rH = cW / imgRatio; // Height is calculated based on image ratio
+                oX = 0;
+                oY = (cH - rH) / 2; // Center vertically
+            } else { // Image is taller than wide or square
+                rH = cH; // Image fills container height
+                rW = cH * imgRatio; // Width is calculated based on image ratio
+                oY = 0;
+                oX = (cW - rW) / 2; // Center horizontally
+            }
 
-             // Apply size and position to canvas FIRST
-             canvas.width = rW; // Set intrinsic size for drawing
-             canvas.height = rH;
-             canvas.style.width = `${rW}px`; // Set display size
-             canvas.style.height = `${rH}px`;
-             canvas.style.left = `${oX}px`; // Position canvas to overlay the rendered image
-             canvas.style.top = `${oY}px`;
+            // Ensure calculated dimensions are valid numbers
+            if (isNaN(rW) || isNaN(rH) || isNaN(oX) || isNaN(oY)) {
+                console.error("Resize Error: Calculated NaN values.", { rW, rH, oX, oY });
+                return;
+            }
 
-             // Apply size and position to adjustment handles container
-             adjustmentHandlesContainer.style.left = `${oX}px`;
-             adjustmentHandlesContainer.style.top = `${oY}px`;
-             adjustmentHandlesContainer.style.width = `${rW}px`;
-             adjustmentHandlesContainer.style.height = `${rH}px`;
+            const newCanvasDrawingWidth = rW;
+            const newCanvasDrawingHeight = rH;
 
-             console.log(`Resize Applied: Canvas W/H: ${canvas.width}x${canvas.height}, Style W/H: ${canvas.style.width}x${canvas.style.height}, Style L/T: ${canvas.style.left}x${canvas.style.top}`);
+            console.log(`Resize Calculated: Rendered Img W/H: ${rW.toFixed(1)}x${rH.toFixed(1)}, Offset X/Y: ${oX.toFixed(1)}x${oY.toFixed(1)}, New Canvas Draw W/H: ${newCanvasDrawingWidth}x${newCanvasDrawingHeight}`);
+
+            // Apply size and position to canvas FIRST
+            canvas.width = newCanvasDrawingWidth; // Set intrinsic size for drawing
+            canvas.height = newCanvasDrawingHeight;
+            canvas.style.width = `${newCanvasDrawingWidth}px`; // Set display size
+            canvas.style.height = `${newCanvasDrawingHeight}px`;
+            canvas.style.left = `${oX}px`; // Position canvas to overlay the rendered image
+            canvas.style.top = `${oY}px`;
+
+            // Apply size and position to adjustment handles container
+            adjustmentHandlesContainer.style.left = `${oX}px`;
+            adjustmentHandlesContainer.style.top = `${oY}px`;
+            adjustmentHandlesContainer.style.width = `${newCanvasDrawingWidth}px`;
+            adjustmentHandlesContainer.style.height = `${newCanvasDrawingHeight}px`;
+
+            console.log(`Resize Applied: Canvas W/H: ${canvas.width}x${canvas.height}, Style W/H: ${canvas.style.width}x${canvas.style.height}, Style L/T: ${canvas.style.left}x${canvas.style.top}`);
+
+            // --- START: MODIFIED POSE LANDMARK HANDLING ---
+            if (oldCanvasDrawingWidth > 0 && oldCanvasDrawingHeight > 0 && draggablePoseLandmarks.length > 0) {
+                const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
+                console.log(`Scaling existing draggablePoseLandmarks by ${scaleFactor.toFixed(3)}.`);
+                draggablePoseLandmarks.forEach((landmark, index) => {
+                    const oldX = landmark.x;
+                    const oldY = landmark.y;
+                    landmark.x *= scaleFactor;
+                    landmark.y *= scaleFactor;
+                    if (index === 0 && landmark.x !== undefined) {
+                        console.log(`Scaled Pose Landmark (idx 0): Old (${oldX.toFixed(1)}, ${oldY.toFixed(1)}) -> New (${landmark.x.toFixed(1)}, ${landmark.y.toFixed(1)})`);
+                    }
+                });
+            } else if (lastPoseDetections?.landmarks?.length > 0) {
+                console.log(`Resize: Initializing draggable pose landmarks from lastPoseDetections. Canvas W/H: ${newCanvasDrawingWidth}x${newCanvasDrawingHeight}`);
+                draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
+                    const pixelX = lm.x * newCanvasDrawingWidth;
+                    const pixelY = lm.y * newCanvasDrawingHeight;
+                    if (index === 0 && pixelX !== undefined) {
+                        console.log(`Resize Initial Calc (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                    }
+                    return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                });
+            } else {
+                draggablePoseLandmarks = [];
+            }
+            // --- END: MODIFIED POSE LANDMARK HANDLING ---
 
 
-             // Recalculate draggable pose points using the NEW canvas dimensions
-             if (lastPoseDetections?.landmarks?.length > 0) {
-                 console.log(`Resize: Recalculating draggable pose landmarks using canvas W/H: ${canvas.width}x${canvas.height}`);
-                 draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
-                      const pixelX = lm.x * canvas.width;
-                      const pixelY = lm.y * canvas.height;
-                      // Add log for a specific point (e.g., nose)
-                      if (index === 0) { // Assuming index 0 is nose
-                          console.log(`Resize Recalc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
-                      }
-                      return { x: pixelX, y: pixelY, visibility: lm.visibility };
-                 });
-             } else {
-                 draggablePoseLandmarks = [];
-             }
+            // ---- START: SCALING FOR MANUAL GRIDS ----
+            if (oldCanvasDrawingWidth > 0 && oldCanvasDrawingHeight > 0 && (newCanvasDrawingWidth > 0 || newCanvasDrawingHeight > 0)) {
+                const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
 
-        
+                if (manualGridRect && manualGridRect.size > 0) {
+                    console.log(`Scaling manualGridRect by ${scaleFactor.toFixed(3)}. Old: x=${manualGridRect.x.toFixed(1)}, y=${manualGridRect.y.toFixed(1)}, size=${manualGridRect.size.toFixed(1)}`);
+                    manualGridRect.x *= scaleFactor;
+                    manualGridRect.y *= scaleFactor;
+                    manualGridRect.size *= scaleFactor;
+                    console.log(`New manualGridRect: x=${manualGridRect.x.toFixed(1)}, y=${manualGridRect.y.toFixed(1)}, size=${manualGridRect.size.toFixed(1)}`);
 
-             redrawCanvas(); // Redraw based on current visibility flags
-             updateIconStates(); // Ensure icons/buttons are correct
-         }
+                    if (isAdjustingManualGrid) {
+                        calculateAndUpdateHandlePositions();
+                    }
+                }
+
+                if (finalManualGridRect && finalManualGridRect.size > 0) {
+                    console.log(`Scaling finalManualGridRect by ${scaleFactor.toFixed(3)}. Old: x=${finalManualGridRect.x.toFixed(1)}, y=${finalManualGridRect.y.toFixed(1)}, size=${finalManualGridRect.size.toFixed(1)}`);
+                    finalManualGridRect.x *= scaleFactor;
+                    finalManualGridRect.y *= scaleFactor;
+                    finalManualGridRect.size *= scaleFactor;
+                    console.log(`New finalManualGridRect: x=${finalManualGridRect.x.toFixed(1)}, y=${finalManualGridRect.y.toFixed(1)}, size=${finalManualGridRect.size.toFixed(1)}`);
+                }
+
+                if (isDrawingManualGrid) {
+                    console.log(`Scaling in-progress manual grid draw points by ${scaleFactor.toFixed(3)}`);
+                    manualGridStartX *= scaleFactor;
+                    manualGridStartY *= scaleFactor;
+                    manualGridCurrentX *= scaleFactor;
+                    manualGridCurrentY *= scaleFactor;
+                }
+            }
+            // ---- END: SCALING FOR MANUAL GRIDS ----
+
+            redrawCanvas(); // Redraw based on current visibility flags
+            updateIconStates(); // Ensure icons/buttons are correct
+        }
 
         // --- Central Drawing Function ---
         // ... (Unchanged: redrawCanvas) ...
