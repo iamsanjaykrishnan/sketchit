@@ -18,187 +18,377 @@
 
         /* Style for dragover state */
         body.dragover {
-            background-color: #e0f2fe; /* Light blue background */
+            background-color: #e0f2fe;
+            /* Light blue background */
         }
+
         .drop-indicator {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            border: 4px dashed #3b82f6; background-color: rgba(59, 130, 246, 0.1);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-            pointer-events: none; opacity: 0; visibility: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 4px dashed #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
-        body.dragover .drop-indicator { opacity: 1; visibility: visible; }
+
+        body.dragover .drop-indicator {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .drop-indicator-text {
-            font-size: 1.5rem; font-weight: 600; color: #2563eb;
-            background-color: rgba(255, 255, 255, 0.8); padding: 1rem 2rem; border-radius: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2563eb;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
         }
 
         /* Hide the default file input */
-        #imageUpload { display: none; }
+        #imageUpload {
+            display: none;
+        }
 
         /* Style for the image preview container */
-        .display-card { max-width: 480px; width: 100%; }
+        .display-card {
+            max-width: 480px;
+            width: 100%;
+        }
 
         /* Container for image and canvas */
         .image-display-container {
-            position: relative; background-color: #f3f4f6; /* bg-gray-100 */
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden; aspect-ratio: 1 / 1; max-height: 600px;
+            position: relative;
+            background-color: #f3f4f6;
+            /* bg-gray-100 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            max-height: 600px;
         }
 
         /* Ensure image fits well */
         .display-card img#imagePreview {
-            display: block; max-width: 100%; max-height: 100%;
-            height: auto; width: auto; object-fit: contain;
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            height: auto;
+            width: auto;
+            object-fit: contain;
         }
 
         /* Canvas overlay */
         #overlayCanvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            cursor: default; touch-action: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+            touch-action: none;
         }
 
         /* Cursors for different states */
         #overlayCanvas.manual-grid-drawing,
-        #overlayCanvas.manual-grid-adjusting:not(.dragging-grid-handle):not(.dragging-grid-square):not(.handle-hover):not(.square-hover) { cursor: crosshair; }
-        #overlayCanvas.dragging-pose, #overlayCanvas.point-hover { cursor: grab; }
-        #overlayCanvas.dragging-grid-handle, #overlayCanvas.handle-hover { cursor: grab; }
-        #overlayCanvas.dragging-grid-square, #overlayCanvas.square-hover { cursor: move; }
+        #overlayCanvas.manual-grid-adjusting:not(.dragging-grid-handle):not(.dragging-grid-square):not(.handle-hover):not(.square-hover) {
+            cursor: crosshair;
+        }
+
+        #overlayCanvas.dragging-pose,
+        #overlayCanvas.point-hover {
+            cursor: grab;
+        }
+
+        #overlayCanvas.dragging-grid-handle,
+        #overlayCanvas.handle-hover {
+            cursor: grab;
+        }
+
+        #overlayCanvas.dragging-grid-square,
+        #overlayCanvas.square-hover {
+            cursor: move;
+        }
 
         /* Material Symbols styling */
         .material-symbols-outlined {
-            vertical-align: middle; font-size: 24px; cursor: pointer;
+            vertical-align: middle;
+            font-size: 24px;
+            cursor: pointer;
             transition: color 0.2s ease;
-             display: inline-block; line-height: 1;
+            display: inline-block;
+            line-height: 1;
         }
-        .material-symbols-outlined.active { color: #3b82f6; }
-        .material-symbols-outlined.disabled { cursor: not-allowed; opacity: 0.5; color: #6b7280; }
-        .material-symbols-outlined.disabled.active { color: #6b7280; opacity: 0.5; }
+
+        .material-symbols-outlined.active {
+            color: #3b82f6;
+        }
+
+        .material-symbols-outlined.disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            color: #6b7280;
+        }
+
+        .material-symbols-outlined.disabled.active {
+            color: #6b7280;
+            opacity: 0.5;
+        }
 
         /* Comments area styling */
         #commentArea {
-            max-height: 100px; overflow-y: auto; padding-top: 0.5rem;
-            font-size: 0.875rem; line-height: 1.25rem; color: #1f2937;
+            max-height: 100px;
+            overflow-y: auto;
+            padding-top: 0.5rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            color: #1f2937;
         }
-        #commentArea p { margin-bottom: 0.375rem; word-break: break-word; }
-        #commentArea .comment-username { font-weight: 600; margin-right: 0.375rem; color: #111827; }
-        #commentArea .comment-error { color: #ef4444; }
-        #commentArea .comment-success { color: #22c55e; }
-        #commentArea .comment-info { color: #374151; }
-        #commentArea .comment-warning { color: #f97316; }
+
+        #commentArea p {
+            margin-bottom: 0.375rem;
+            word-break: break-word;
+        }
+
+        #commentArea .comment-username {
+            font-weight: 600;
+            margin-right: 0.375rem;
+            color: #111827;
+        }
+
+        #commentArea .comment-error {
+            color: #ef4444;
+        }
+
+        #commentArea .comment-success {
+            color: #22c55e;
+        }
+
+        #commentArea .comment-info {
+            color: #374151;
+        }
+
+        #commentArea .comment-warning {
+            color: #f97316;
+        }
 
         /* Modal Styling */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6); display: flex;
-            align-items: center; justify-content: center; z-index: 1000;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .modal-overlay.visible { opacity: 1; visibility: visible; }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .modal-content {
-            background-color: white; padding: 1.5rem 2rem; border-radius: 0.5rem;
+            background-color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            max-width: 90%; width: 350px; text-align: center;
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
         }
-        .modal-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: #1f2937; }
-        .modal-body { margin-bottom: 1.5rem; color: #4b5563; }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+            color: #4b5563;
+        }
+
         .modal-actions button {
-            margin: 0 0.5rem; padding: 0.5rem 1rem; border-radius: 0.375rem;
-            font-weight: 500; transition: background-color 0.2s ease;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
         }
-        .modal-actions button.select-face-btn { background-color: #3b82f6; color: white; }
-        .modal-actions button.select-face-btn:hover { background-color: #2563eb; }
-        .modal-actions button.cancel-btn { background-color: #e5e7eb; color: #374151; }
-        .modal-actions button.cancel-btn:hover { background-color: #d1d5db; }
+
+        .modal-actions button.select-face-btn {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .modal-actions button.select-face-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .modal-actions button.cancel-btn {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .modal-actions button.cancel-btn:hover {
+            background-color: #d1d5db;
+        }
 
         /* Adjustment Handle Styling */
         .adjustment-handle {
-            position: absolute; width: 10px; height: 10px;
-            background-color: rgba(255, 0, 255, 0.8); border: 1px solid rgba(0,0,0,0.5);
-            border-radius: 50%; cursor: grab; transform: translate(-50%, -50%);
-            z-index: 10; pointer-events: none;
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 0, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            cursor: grab;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
         }
+
         .adjustment-handle[data-type^="t"],
         .adjustment-handle[data-type^="b"],
-        .adjustment-handle[data-type^="m"] { border-radius: 0; }
-        #overlayCanvas.manual-grid-adjusting .adjustment-handle { pointer-events: auto; }
+        .adjustment-handle[data-type^="m"] {
+            border-radius: 0;
+        }
+
+        #overlayCanvas.manual-grid-adjusting .adjustment-handle {
+            pointer-events: auto;
+        }
 
         /* Confirm Button Styling */
-        #confirmGridButton { transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #confirmGridButton {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
 
         /* Colorful Upload Card Styling - Purple to Pink */
         #uploadCard {
-            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); /* Purple to Pink */
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            /* Purple to Pink */
             border: none;
             transition: box-shadow 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
+
         #uploadCard:hover {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
+
         #uploadCard h2 {
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
         }
-         #uploadCard p {
-            color: #f3e8ff; /* Lighter purple/pink text */
+
+        #uploadCard p {
+            color: #f3e8ff;
+            /* Lighter purple/pink text */
         }
+
         #uploadCard .dashed-zone {
             border: 2px dashed rgba(255, 255, 255, 0.5);
             background-color: rgba(255, 255, 255, 0.1);
             transition: border-color 0.3s ease, background-color 0.3s ease;
         }
-         #uploadCard:hover .dashed-zone {
+
+        #uploadCard:hover .dashed-zone {
             border-color: rgba(255, 255, 255, 0.8);
             background-color: rgba(255, 255, 255, 0.2);
         }
-         #uploadCard .dashed-zone .material-symbols-outlined {
-             color: rgba(255, 255, 255, 0.7);
-             transition: color 0.3s ease;
-             font-size: 40px;
-         }
-         #uploadCard:hover .dashed-zone .material-symbols-outlined {
-              color: white;
-         }
+
+        #uploadCard .dashed-zone .material-symbols-outlined {
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.3s ease;
+            font-size: 40px;
+        }
+
+        #uploadCard:hover .dashed-zone .material-symbols-outlined {
+            color: white;
+        }
+
         #uploadCard .dashed-zone .upload-text-primary {
             color: white;
             font-weight: 500;
         }
-         #uploadCard .dashed-zone .upload-text-secondary {
-            color: #fce7f3; /* Lighter pink text */
+
+        #uploadCard .dashed-zone .upload-text-secondary {
+            color: #fce7f3;
+            /* Lighter pink text */
         }
 
-         /* External New Upload Button Styling */
-         #newUploadButtonExt {
-             cursor: pointer; display: none; align-items: center; justify-content: center;
-             padding: 0.75rem 1.5rem; border: 1px solid transparent; font-size: 1rem;
-             font-weight: 500; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-             color: white; background-color: #4f46e5; 
-             transition: background-color 0.15s ease-in-out; margin-bottom: 1.5rem; width: auto;
-         }
-         #newUploadButtonExt:not(.hidden) {
-             display: inline-flex;
-         }
-         #newUploadButtonExt:hover { background-color: #4338ca; }
-         #newUploadButtonExt:focus {
-             outline: 2px solid transparent; outline-offset: 2px;
-             box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
-         }
-         #newUploadButtonExt .material-symbols-outlined {
-             margin-right: 0.5rem; font-size: 20px; vertical-align: middle;
-             color: white; cursor: pointer;
-         }
+        /* External New Upload Button Styling */
+        #newUploadButtonExt {
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid transparent;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            color: white;
+            background-color: #4f46e5;
+            transition: background-color 0.15s ease-in-out;
+            margin-bottom: 1.5rem;
+            width: auto;
+        }
 
-         /* Privacy/Terms Policy Card Styling */
-         .policy-card {
-             max-width: 480px; /* Match width of other cards */
-             width: 100%;
-             margin-top: 0.75rem; /* Space between policy cards */
-             background-color: #f9fafb; /* Slightly off-white */
-             border: 1px solid #e5e7eb; /* Soft border */
-         }
+        #newUploadButtonExt:not(.hidden) {
+            display: inline-flex;
+        }
 
+        #newUploadButtonExt:hover {
+            background-color: #4338ca;
+        }
+
+        #newUploadButtonExt:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
+        }
+
+        #newUploadButtonExt .material-symbols-outlined {
+            margin-right: 0.5rem;
+            font-size: 20px;
+            vertical-align: middle;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Privacy/Terms Policy Card Styling */
+        .policy-card {
+            max-width: 480px;
+            /* Match width of other cards */
+            width: 100%;
+            margin-top: 0.75rem;
+            /* Space between policy cards */
+            background-color: #f9fafb;
+            /* Slightly off-white */
+            border: 1px solid #e5e7eb;
+            /* Soft border */
+        }
     </style>
 </head>
 
@@ -210,43 +400,49 @@
 
     <div class="w-full max-w-md mx-auto flex flex-col items-center">
 
-        <label id="uploadCard" for="imageUpload" class="cursor-pointer rounded-lg shadow-lg p-6 md:p-8 w-full text-center mb-6 block">
+        <label id="uploadCard" for="imageUpload"
+            class="cursor-pointer rounded-lg shadow-lg p-6 md:p-8 w-full text-center mb-6 block">
             <h2 class="text-2xl font-bold mb-3">Sketchit</h2>
             <p class="text-base mb-6">
-                Sketchit is a simple web tool designed for artists. It uses MediaPipe library to detect human faces or body poses in an uploaded image and overlays a helpful reference grid, making it easier to sketch or study proportions
+                Sketchit is a simple web tool designed for artists. It uses MediaPipe library to detect human faces or
+                body poses in an uploaded image and overlays a helpful reference grid, making it easier to sketch or
+                study proportions
             </p>
             <div class="dashed-zone flex flex-col items-center justify-center rounded-lg p-8">
-                 <span class="material-symbols-outlined mb-3">upload_file</span>
-                 <span class="upload-text-primary text-lg">Click to upload</span>
-                 <span class="upload-text-secondary text-sm mt-1">or drag and drop an image</span>
+                <span class="material-symbols-outlined mb-3">upload_file</span>
+                <span class="upload-text-primary text-lg">Click to upload</span>
+                <span class="upload-text-secondary text-sm mt-1">or drag and drop an image</span>
             </div>
         </label>
         <input type="file" id="imageUpload" accept="image/*">
         <button id="newUploadButtonExt" class="hidden">
-             <span class="material-symbols-outlined">upload</span>
-             Upload New Image
+            <span class="material-symbols-outlined">upload</span>
+            Upload New Image
         </button>
         <div id="imagePreviewContainer"
             class="display-card bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden hidden mx-auto">
             <div class="p-3 border-b border-gray-200 flex items-center justify-between space-x-3">
-                 <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                         <span class="material-symbols-outlined text-gray-500 text-lg">person</span>
                     </div>
                     <span class="font-semibold text-sm text-gray-800">sketchit</span>
-                 </div>
+                </div>
             </div>
 
             <div class="relative">
                 <div class="image-display-container">
                     <img id="imagePreview" src="#" alt="Image Preview" class="block">
                     <canvas id="overlayCanvas"></canvas>
-                    <div id="placeholderText" class="text-center text-gray-500 p-10 hidden">Select an image to preview</div>
+                    <div id="placeholderText" class="text-center text-gray-500 p-10 hidden">Select an image to preview
+                    </div>
                 </div>
-                <div id="adjustmentHandlesContainer" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
-                 <button id="confirmGridButton" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-500 text-white rounded-md shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 opacity-0 invisible pointer-events-none z-20">
-                     Confirm Grid
-                 </button>
+                <div id="adjustmentHandlesContainer" class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                </div>
+                <button id="confirmGridButton"
+                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-500 text-white rounded-md shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 opacity-0 invisible pointer-events-none z-20">
+                    Confirm Grid
+                </button>
             </div>
 
             <div class="p-3 border-t border-gray-200 space-y-3">
@@ -257,8 +453,8 @@
                         title="Toggle Pose Landmarks">accessibility_new</span>
                     <span id="iconGrid" class="material-symbols-outlined text-gray-700 hover:text-gray-900 disabled"
                         title="Manually Draw Grid Square">grid_on</span>
-                     <span id="iconRestart" class="material-symbols-outlined text-gray-700 hover:text-gray-900"
-                         title="Clear All Overlays & Data">restart_alt</span>
+                    <span id="iconRestart" class="material-symbols-outlined text-gray-700 hover:text-gray-900"
+                        title="Clear All Overlays & Data">restart_alt</span>
                 </div>
                 <div id="commentArea">
                     <p class="comment-info"><span class="comment-username">System</span>Initializing MediaPipe...</p>
@@ -269,18 +465,21 @@
             <ul class="text-xs text-gray-500 text-left list-disc pl-5 space-y-1">
                 <li>
                     <span class="font-medium">Privacy Note:</span>
-                    Your images are processed directly in your browser using MediaPipe library. 
+                    Your images are processed directly in your browser using MediaPipe library.
                 </li>
                 <li>
                     <span class="font-medium">Terms of Use:</span>
-                    This tool is provided 'as-is' without warranty for creative use. <a href="https://ai.google.dev/edge/mediapipe/legal/tos" target="_blank" rel="noopener noreferrer" class="underline text-indigo-600 hover:text-indigo-800 ml-1">MediaPipe Terms apply.</a> Use responsibly.<br>
+                    This tool is provided 'as-is' without warranty for creative use. <a
+                        href="https://ai.google.dev/edge/mediapipe/legal/tos" target="_blank" rel="noopener noreferrer"
+                        class="underline text-indigo-600 hover:text-indigo-800 ml-1">MediaPipe Terms apply.</a> Use
+                    responsibly.<br>
                 </li>
                 <li>
                     <span class="font-medium ">Note:</span> By uploading an image you agree to our terms and policy.
                 </li>
             </ul>
         </div>
-        </div>
+    </div>
 
     <div id="faceSelectionModal" class="modal-overlay">
         <div class="modal-content">
@@ -328,7 +527,7 @@
 
         // --- Draggable State (Pose) ---
         let draggablePoseLandmarks = [];
-        let draggedPointIndex = -1;
+        let draggedPointInfo = null;
         let isDraggingPosePoint = false;
         const pointRadius = 5;
         const hitRadius = pointRadius * 1.5;
@@ -377,78 +576,78 @@
         // === IndexedDB Helper Functions ===
         // ... (Unchanged) ...
         async function openDB(name, version) {
-             return new Promise((resolve, reject) => {
-                 addComment(`Opening model cache DB (${name} v${version})...`, 'info');
-                 const request = indexedDB.open(name, version);
-                 request.onupgradeneeded = function () {
-                     try {
-                         const db = request.result;
-                         if (!db.objectStoreNames.contains(MODEL_STORE_NAME)) {
-                             db.createObjectStore(MODEL_STORE_NAME, { keyPath: 'name' });
-                         }
-                     } catch (err) { reject('Error during DB upgrade'); }
-                 };
-                 request.onsuccess = () => resolve(request.result);
-                 request.onerror = (e) => reject('Error opening IndexedDB');
-             });
-         }
+            return new Promise((resolve, reject) => {
+                addComment(`Opening model cache DB (${name} v${version})...`, 'info');
+                const request = indexedDB.open(name, version);
+                request.onupgradeneeded = function () {
+                    try {
+                        const db = request.result;
+                        if (!db.objectStoreNames.contains(MODEL_STORE_NAME)) {
+                            db.createObjectStore(MODEL_STORE_NAME, {keyPath: 'name'});
+                        }
+                    } catch (err) {reject('Error during DB upgrade');}
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = (e) => reject('Error opening IndexedDB');
+            });
+        }
         async function saveModelToDB(db, modelName, modelData) {
-             return new Promise((resolve, reject) => {
-                 if (!db) return reject('DB not available.');
-                 try {
-                     const tx = db.transaction(MODEL_STORE_NAME, 'readwrite');
-                     const store = tx.objectStore(MODEL_STORE_NAME);
-                     const request = store.put({ name: modelName, data: modelData });
-                     request.onsuccess = () => resolve();
-                     request.onerror = (e) => reject(`Error saving ${modelName}`);
-                 } catch (e) { reject(`Error saving ${modelName}`); }
-             });
-         }
+            return new Promise((resolve, reject) => {
+                if (!db) return reject('DB not available.');
+                try {
+                    const tx = db.transaction(MODEL_STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(MODEL_STORE_NAME);
+                    const request = store.put({name: modelName, data: modelData});
+                    request.onsuccess = () => resolve();
+                    request.onerror = (e) => reject(`Error saving ${modelName}`);
+                } catch (e) {reject(`Error saving ${modelName}`);}
+            });
+        }
         async function getModelFromDB(db, modelName) {
-             return new Promise((resolve, reject) => {
-                 if (!db) return reject('DB not available.');
-                 try {
-                     const tx = db.transaction(MODEL_STORE_NAME, 'readonly');
-                     const store = tx.objectStore(MODEL_STORE_NAME);
-                     const request = store.get(modelName);
-                     request.onsuccess = () => resolve(request.result?.data || null);
-                     request.onerror = (e) => reject(`Error getting ${modelName}`);
-                 } catch (e) { reject(`Error getting ${modelName}`); }
-             });
-         }
+            return new Promise((resolve, reject) => {
+                if (!db) return reject('DB not available.');
+                try {
+                    const tx = db.transaction(MODEL_STORE_NAME, 'readonly');
+                    const store = tx.objectStore(MODEL_STORE_NAME);
+                    const request = store.get(modelName);
+                    request.onsuccess = () => resolve(request.result?.data || null);
+                    request.onerror = (e) => reject(`Error getting ${modelName}`);
+                } catch (e) {reject(`Error getting ${modelName}`);}
+            });
+        }
         async function fetchModelBlob(url) {
-             addComment(`Downloading model from ${url}...`, 'info');
-             const response = await fetch(url);
-             if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-             const blob = await response.blob();
-             addComment(`Fetched model (${(blob.size / 1024 / 1024).toFixed(2)} MB).`, 'success');
-             return blob;
-         }
+            addComment(`Downloading model from ${url}...`, 'info');
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+            const blob = await response.blob();
+            addComment(`Fetched model (${(blob.size / 1024 / 1024).toFixed(2)} MB).`, 'success');
+            return blob;
+        }
         async function getModelAssetBuffer(db, modelName, modelUrl) {
-             try {
-                 let modelBlob = await getModelFromDB(db, modelName);
-                 if (modelBlob) { addComment(`Loading ${modelName} from cache...`, 'success'); }
-                 else {
-                     addComment(`${modelName} not in cache.`, 'info');
-                     modelBlob = await fetchModelBlob(modelUrl);
-                     try {
-                         addComment(`Storing ${modelName} in cache...`, 'info');
-                         await saveModelToDB(db, modelName, modelBlob);
-                         addComment(`${modelName} stored.`, 'success');
-                     } catch (saveError) { addComment(`Failed to store ${modelName}: ${saveError}.`, 'warning'); }
-                 }
-                 const arrayBuffer = await modelBlob.arrayBuffer();
-                 return new Uint8Array(arrayBuffer);
-             } catch (error) {
-                 addComment(`Failed to load/fetch ${modelName}: ${error}`, 'error');
-                 return null;
-             }
-         }
+            try {
+                let modelBlob = await getModelFromDB(db, modelName);
+                if (modelBlob) {addComment(`Loading ${modelName} from cache...`, 'success');}
+                else {
+                    addComment(`${modelName} not in cache.`, 'info');
+                    modelBlob = await fetchModelBlob(modelUrl);
+                    try {
+                        addComment(`Storing ${modelName} in cache...`, 'info');
+                        await saveModelToDB(db, modelName, modelBlob);
+                        addComment(`${modelName} stored.`, 'success');
+                    } catch (saveError) {addComment(`Failed to store ${modelName}: ${saveError}.`, 'warning');}
+                }
+                const arrayBuffer = await modelBlob.arrayBuffer();
+                return new Uint8Array(arrayBuffer);
+            } catch (error) {
+                addComment(`Failed to load/fetch ${modelName}: ${error}`, 'error');
+                return null;
+            }
+        }
 
         // --- Initialization ---
         async function initializeApp() {
-            if (canvasCtx) { drawingUtils = new DrawingUtils(canvasCtx); }
-            else { console.error("Failed to get canvas context"); return; }
+            if (canvasCtx) {drawingUtils = new DrawingUtils(canvasCtx);}
+            else {console.error("Failed to get canvas context"); return;}
             resetCommonState(); // Ensure initial state is correct
             landmarkDB = await openDB(DB_NAME, DB_VERSION);
             await initializeFaceLandmarker();
@@ -458,54 +657,56 @@
 
         // --- Utility Functions ---
         function addComment(message, type = 'info', username = 'System') {
-             if (!commentArea) return; if (!isCommentAreaInitialized && (commentArea.innerHTML.includes('Initializing MediaPipe...') || commentArea.innerHTML.includes('Comments will appear here...'))) {commentArea.innerHTML = ''; isCommentAreaInitialized = true;} else if (commentArea.innerHTML === '') {isCommentAreaInitialized = true;}
-             const cE = document.createElement('p'); const uS = document.createElement('span'); const mS = document.createElement('span'); uS.className = 'comment-username'; uS.textContent = username; mS.className = `comment-${type}`; mS.textContent = ` ${message}`; cE.appendChild(uS); cE.appendChild(mS); commentArea.appendChild(cE); commentArea.scrollTop = commentArea.scrollHeight;
-         }
-        function clearCanvas() { if (canvasCtx && overlayCanvas) { canvasCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); } }
+            if (!commentArea) return; if (!isCommentAreaInitialized && (commentArea.innerHTML.includes('Initializing MediaPipe...') || commentArea.innerHTML.includes('Comments will appear here...'))) {commentArea.innerHTML = ''; isCommentAreaInitialized = true;} else if (commentArea.innerHTML === '') {isCommentAreaInitialized = true;}
+            const cE = document.createElement('p'); const uS = document.createElement('span'); const mS = document.createElement('span'); uS.className = 'comment-username'; uS.textContent = username; mS.className = `comment-${type}`; mS.textContent = ` ${message}`; cE.appendChild(uS); cE.appendChild(mS); commentArea.appendChild(cE); commentArea.scrollTop = commentArea.scrollHeight;
+        }
+        function clearCanvas() {if (canvasCtx && overlayCanvas) {canvasCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);} }
 
         // --- MediaPipe Initialization ---
         // ... (Unchanged: initializeVisionResolver, initializeFaceLandmarker, initializePoseLandmarker) ...
         async function initializeVisionResolver() {
-             if (!visionResolver) {addComment('Loading MediaPipe Vision Tasks...', 'info'); try {visionResolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"); addComment('Vision Tasks ready.', 'success');} catch (error) {console.error("Vision Tasks Init Error:", error); addComment(`Error initializing Vision Tasks: ${error.message || 'Unknown error'}`, 'error'); visionResolver = null; throw error;} } return visionResolver;
-         }
+            if (!visionResolver) {addComment('Loading MediaPipe Vision Tasks...', 'info'); try {visionResolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"); addComment('Vision Tasks ready.', 'success');} catch (error) {console.error("Vision Tasks Init Error:", error); addComment(`Error initializing Vision Tasks: ${error.message || 'Unknown error'}`, 'error'); visionResolver = null; throw error;} } return visionResolver;
+        }
         async function initializeFaceLandmarker() {
-             try {
-                 const r = await initializeVisionResolver();
-                 if (!r) return; addComment('Loading Face Landmarker model...', 'info');
-                 const faceModelBuffer = await getModelAssetBuffer(landmarkDB, FACE_MODEL_KEY, FACE_MODEL_URL);
-                 if (!faceModelBuffer) { addComment(`Failed to load Face Landmarker model.`, 'error'); return; }
-                 faceLandmarker = await FaceLandmarker.createFromOptions(visionResolver, {
-                     baseOptions: { modelAssetBuffer: faceModelBuffer, delegate: "GPU" },
-                     outputFaceBlendshapes: true, runningMode: "IMAGE", numFaces: 3
-                 });
-                 addComment('Face Landmarker loaded.', 'success');
-                 isFaceLandmarkerInitialized = true; updateIconStates();
-             } catch (e) { console.error("Face Landmarker Init Error:", e); addComment(`Error initializing Face Landmarker: ${e}`, 'error'); isFaceLandmarkerInitialized = false; updateIconStates(); }
-         }
+            try {
+                const r = await initializeVisionResolver();
+                if (!r) return; addComment('Loading Face Landmarker model...', 'info');
+                const faceModelBuffer = await getModelAssetBuffer(landmarkDB, FACE_MODEL_KEY, FACE_MODEL_URL);
+                if (!faceModelBuffer) {addComment(`Failed to load Face Landmarker model.`, 'error'); return;}
+                faceLandmarker = await FaceLandmarker.createFromOptions(visionResolver, {
+                    baseOptions: {modelAssetBuffer: faceModelBuffer, delegate: "GPU"},
+                    outputFaceBlendshapes: true, runningMode: "IMAGE", numFaces: 3
+                });
+                addComment('Face Landmarker loaded.', 'success');
+                isFaceLandmarkerInitialized = true; updateIconStates();
+            } catch (e) {console.error("Face Landmarker Init Error:", e); addComment(`Error initializing Face Landmarker: ${e}`, 'error'); isFaceLandmarkerInitialized = false; updateIconStates();}
+        }
         async function initializePoseLandmarker() {
-             try {
-                 const r = await initializeVisionResolver();
-                 if (!r) return; addComment('Loading Pose Landmarker model...', 'info');
-                 const poseModelBuffer = await getModelAssetBuffer(landmarkDB, POSE_MODEL_KEY, POSE_MODEL_URL);
-                 if (!poseModelBuffer) { addComment(`Failed to load Pose Landmarker model.`, 'error'); return; }
-                 poseLandmarker = await PoseLandmarker.createFromOptions(visionResolver, {
-                     baseOptions: { modelAssetBuffer: poseModelBuffer, delegate: "GPU" },
-                     runningMode: "IMAGE", numPoses: 1
-                 });
-                 addComment('Pose Landmarker loaded.', 'success');
-                 isPoseLandmarkerInitialized = true; updateIconStates();
-             } catch (e) { console.error("Pose Landmarker Init Error:", e); addComment(`Error initializing Pose Landmarker: ${e}`, 'error'); isPoseLandmarkerInitialized = false; updateIconStates(); }
-         }
+            try {
+                const r = await initializeVisionResolver();
+                if (!r) return; addComment('Loading Pose Landmarker model...', 'info');
+                const poseModelBuffer = await getModelAssetBuffer(landmarkDB, POSE_MODEL_KEY, POSE_MODEL_URL);
+                if (!poseModelBuffer) {addComment(`Failed to load Pose Landmarker model.`, 'error'); return;}
+                poseLandmarker = await PoseLandmarker.createFromOptions(visionResolver, {
+                    baseOptions: {modelAssetBuffer: poseModelBuffer, delegate: "GPU"},
+                    runningMode: "IMAGE", numPoses: 3
+                });
+                addComment('Pose Landmarker loaded.', 'success');
+                isPoseLandmarkerInitialized = true; updateIconStates();
+            } catch (e) {console.error("Pose Landmarker Init Error:", e); addComment(`Error initializing Pose Landmarker: ${e}`, 'error'); isPoseLandmarkerInitialized = false; updateIconStates();}
+        }
 
         // --- Reset Common State ---
         function resetCommonState() {
-            if (commentArea) { commentArea.innerHTML = ''; }
+            if (commentArea) {commentArea.innerHTML = '';}
             isCommentAreaInitialized = false;
             clearCanvas();
             currentImageElement = null;
             lastFaceDetections = null;
             lastPoseDetections = null;
             draggablePoseLandmarks = [];
+            draggedPointInfo = null;
+
             selectedReferenceFaceIndex = null;
             showFaceLandmarks = false;
             showPoseLandmarks = false;
@@ -553,7 +754,7 @@
 
         // --- Image Loading (URL) ---
         function processImageUrl(url) {
-             // Don't reset here, reset happens *before* calling this
+            // Don't reset here, reset happens *before* calling this
             if (!url) {
                 addComment('No image URL provided.', 'error');
                 resetFullPreview();
@@ -578,8 +779,8 @@
                     const tempCanvas = document.createElement('canvas'); tempCanvas.width = 1; tempCanvas.height = 1;
                     const tempCtx = tempCanvas.getContext('2d'); tempCtx.drawImage(imagePreview, 0, 0, 1, 1); tempCtx.getImageData(0, 0, 1, 1);
                 } catch (e) {
-                    if (e.name === "SecurityError") { addComment(`Image loaded, but it's from a different origin without CORS headers. MediaPipe detection might not work.`, 'warning'); }
-                    else { console.warn("Unexpected error checking canvas taint:", e); }
+                    if (e.name === "SecurityError") {addComment(`Image loaded, but it's from a different origin without CORS headers. MediaPipe detection might not work.`, 'warning');}
+                    else {console.warn("Unexpected error checking canvas taint:", e);}
                 }
                 updateIconStates();
             };
@@ -598,27 +799,27 @@
             if (file) {
                 processImageFile(file);
             } else {
-                 addComment('No file selected.', 'info');
-                 // No need to call resetFullPreview again, resetCommonState did it.
+                addComment('No file selected.', 'info');
+                // No need to call resetFullPreview again, resetCommonState did it.
             }
         }
 
         // Modified resetPreviewVisuals - Controls visibility of upload card vs preview + button
         function resetPreviewVisuals() {
-             if (uploadCard) uploadCard.classList.remove('hidden'); // SHOW upload card
-             if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden'); // HIDE preview
-             if (newUploadButtonExt) newUploadButtonExt.classList.add('hidden'); // HIDE external button
-             imagePreview.removeAttribute('src');
-             imagePreview.removeAttribute('crossOrigin');
-             imagePreview.classList.add('hidden');
-             placeholderText.classList.add('hidden');
-         }
+            if (uploadCard) uploadCard.classList.remove('hidden'); // SHOW upload card
+            if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden'); // HIDE preview
+            if (newUploadButtonExt) newUploadButtonExt.classList.add('hidden'); // HIDE external button
+            imagePreview.removeAttribute('src');
+            imagePreview.removeAttribute('crossOrigin');
+            imagePreview.classList.add('hidden');
+            placeholderText.classList.add('hidden');
+        }
 
         function resetFullPreview() {
-             resetCommonState(); // Use the common reset function
-             if (imageUpload) { imageUpload.value = null; } // Clear file input value
-             addComment('Preview reset. Upload a new image or drop it here.', 'info');
-         }
+            resetCommonState(); // Use the common reset function
+            if (imageUpload) {imageUpload.value = null;} // Clear file input value
+            addComment('Preview reset. Upload a new image or drop it here.', 'info');
+        }
 
         // Resets states related to manual grid definition/adjustment.
         function resetManualGridState(resetConfirmedGrid = false) {
@@ -640,7 +841,7 @@
             addComment('Clearing overlays and detection data...', 'info', 'sketchit');
             // Only clear overlays that are currently active, not the loaded image or preview UI
             let overlaysCleared = false;
-            if (showFaceLandmarks ) {
+            if (showFaceLandmarks) {
                 showFaceLandmarks = false;
                 lastFaceDetections = null;
                 selectedReferenceFaceIndex = null;
@@ -710,8 +911,8 @@
             else iconGrid.title = "Manually Draw Grid Square";
 
             // Canvas Cursors & Classes (only apply if image is visible)
-            overlayCanvas.classList.remove( 'manual-grid-drawing', 'manual-grid-adjusting', 'dragging-pose', 'dragging-grid-handle', 'dragging-grid-square', 'point-hover', 'handle-hover', 'square-hover');
-             if(imageLoadedAndVisible) {
+            overlayCanvas.classList.remove('manual-grid-drawing', 'manual-grid-adjusting', 'dragging-pose', 'dragging-grid-handle', 'dragging-grid-square', 'point-hover', 'handle-hover', 'square-hover');
+            if (imageLoadedAndVisible) {
                 if (isDrawingManualGrid) overlayCanvas.classList.add('manual-grid-drawing');
                 if (isAdjustingManualGrid) overlayCanvas.classList.add('manual-grid-adjusting');
                 if (isDraggingPosePoint) overlayCanvas.classList.add('dragging-pose');
@@ -720,7 +921,7 @@
                 if (isHoveringPosePoint) overlayCanvas.classList.add('point-hover');
                 if (isHoveringGridHandle) overlayCanvas.classList.add('handle-hover');
                 if (isHoveringGridSquare) overlayCanvas.classList.add('square-hover');
-             }
+            }
 
             // Confirm Button Visibility
             const showConfirm = isAdjustingManualGrid && imageLoadedAndVisible;
@@ -734,8 +935,8 @@
             updateAdjustmentHandles();
         }
 
-// --- Canvas Resizing --- REFINED with LOGGING & FIXES ---
-function resizeCanvasToImage() {
+        // --- Canvas Resizing --- REFINED with LOGGING & FIXES ---
+        function resizeCanvasToImage() {
             // Ensure elements exist and image has loaded dimensions
             if (!currentImageElement || !overlayCanvas || !imagePreviewContainer || !currentImageElement.naturalWidth || !currentImageElement.naturalHeight) {
                 // Added check for naturalHeight as well for robustness
@@ -787,7 +988,7 @@ function resizeCanvasToImage() {
 
             // Ensure calculated dimensions are valid numbers (especially after multiplication by finalScale)
             if (isNaN(rW) || isNaN(rH) || isNaN(oX) || isNaN(oY)) {
-                console.error("Resize Error: Calculated NaN values for rW, rH, oX, or oY.", { rW, rH, oX, oY, finalScale });
+                console.error("Resize Error: Calculated NaN values for rW, rH, oX, or oY.", {rW, rH, oX, oY, finalScale});
                 return;
             }
             // Ensure rW and rH are not negative or extremely small due to float precision with finalScale
@@ -817,32 +1018,37 @@ function resizeCanvasToImage() {
             console.log(`Resize Applied: Canvas W/H: ${canvas.width}x${canvas.height}, Style W/H: ${canvas.style.width}x${canvas.style.height}, Style L/T: ${canvas.style.left}x${canvas.style.top}`);
 
             // --- START: MODIFIED POSE LANDMARK HANDLING ---
-            if (oldCanvasDrawingWidth > 0 && oldCanvasDrawingHeight > 0 && draggablePoseLandmarks.length > 0 && newCanvasDrawingWidth > 0) { // Added newCanvasDrawingWidth > 0 for scaleFactor safety
+            if (oldCanvasDrawingWidth > 0 && oldCanvasDrawingHeight > 0 && draggablePoseLandmarks.length > 0 && newCanvasDrawingWidth > 0) {
                 const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
-                // Check if scaling is significant to avoid floating point issues on tiny changes
                 if (Math.abs(scaleFactor - 1.0) > 0.0001 || oldCanvasDrawingWidth !== newCanvasDrawingWidth || oldCanvasDrawingHeight !== newCanvasDrawingHeight) {
-                    console.log(`Scaling existing draggablePoseLandmarks by ${scaleFactor.toFixed(3)}.`);
-                    draggablePoseLandmarks.forEach((landmark, index) => {
-                        const oldX = landmark.x;
-                        const oldY = landmark.y;
-                        landmark.x *= scaleFactor;
-                        landmark.y *= scaleFactor;
-                        if (index === 0 && landmark.x !== undefined) {
-                            console.log(`Scaled Pose Landmark (idx 0): Old (${oldX.toFixed(1)}, ${oldY.toFixed(1)}) -> New (${landmark.x.toFixed(1)}, ${landmark.y.toFixed(1)})`);
-                        }
+                    console.log(`Scaling existing draggablePoseLandmarks (multiple poses) by ${scaleFactor.toFixed(3)}.`);
+                    // MODIFICATION: Iterate through each pose and its landmarks
+                    draggablePoseLandmarks.forEach((singlePoseLandmarks, poseIndex) => {
+                        singlePoseLandmarks.forEach((landmark, landmarkIndex) => {
+                            const oldX = landmark.x;
+                            const oldY = landmark.y;
+                            landmark.x *= scaleFactor;
+                            landmark.y *= scaleFactor;
+                            if (poseIndex === 0 && landmarkIndex === 0 && landmark.x !== undefined) { // Log first point of first pose
+                                console.log(`Scaled Pose ${poseIndex} Lm ${landmarkIndex}: Old (${oldX.toFixed(1)}, ${oldY.toFixed(1)}) -> New (${landmark.x.toFixed(1)}, ${landmark.y.toFixed(1)})`);
+                            }
+                        });
                     });
                 } else {
-                    console.log("Pose landmarks: No significant scaling needed.");
+                    console.log("Pose landmarks (multiple): No significant scaling needed.");
                 }
             } else if (lastPoseDetections?.landmarks?.length > 0 && newCanvasDrawingWidth > 0 && newCanvasDrawingHeight > 0) {
-                console.log(`Resize: Initializing draggable pose landmarks from lastPoseDetections. Canvas W/H: ${newCanvasDrawingWidth}x${newCanvasDrawingHeight}`);
-                draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
-                    const pixelX = lm.x * newCanvasDrawingWidth;
-                    const pixelY = lm.y * newCanvasDrawingHeight;
-                    if (index === 0 && pixelX !== undefined) {
-                        console.log(`Resize Initial Calc (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
-                    }
-                    return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                console.log(`Resize: Initializing draggable pose landmarks (multiple) from lastPoseDetections. Canvas W/H: ${newCanvasDrawingWidth}x${newCanvasDrawingHeight}`);
+                // MODIFICATION: Iterate through each pose and its landmarks from lastPoseDetections
+                draggablePoseLandmarks = lastPoseDetections.landmarks.map((poseLandmarksArray, poseIndexOuter) => {
+                    return poseLandmarksArray.map((lm, landmarkIndexOuter) => {
+                        const pixelX = lm.x * newCanvasDrawingWidth;
+                        const pixelY = lm.y * newCanvasDrawingHeight;
+                        if (poseIndexOuter === 0 && landmarkIndexOuter === 0 && pixelX !== undefined) { // Log first point of first pose
+                            console.log(`Resize Initial Calc (Pose ${poseIndexOuter}, Lm ${landmarkIndexOuter}): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                        }
+                        return {x: pixelX, y: pixelY, visibility: lm.visibility};
+                    });
                 });
             } else {
                 draggablePoseLandmarks = [];
@@ -853,7 +1059,7 @@ function resizeCanvasToImage() {
             // ---- START: SCALING FOR MANUAL GRIDS ----
             if (oldCanvasDrawingWidth > 0 && oldCanvasDrawingHeight > 0 && newCanvasDrawingWidth > 0) { // Added newCanvasDrawingWidth > 0 for scaleFactor safety
                 const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
-                 // Check if scaling is significant
+                // Check if scaling is significant
                 if (Math.abs(scaleFactor - 1.0) > 0.0001 || oldCanvasDrawingWidth !== newCanvasDrawingWidth || oldCanvasDrawingHeight !== newCanvasDrawingHeight) {
                     if (manualGridRect && manualGridRect.size > 0) {
                         console.log(`Scaling manualGridRect by ${scaleFactor.toFixed(3)}. Old: x=${manualGridRect.x.toFixed(1)}, y=${manualGridRect.y.toFixed(1)}, size=${manualGridRect.size.toFixed(1)}`);
@@ -883,7 +1089,7 @@ function resizeCanvasToImage() {
                         manualGridCurrentY *= scaleFactor;
                     }
                 } else {
-                     console.log("Manual grids: No significant scaling needed.");
+                    console.log("Manual grids: No significant scaling needed.");
                 }
             }
             // ---- END: SCALING FOR MANUAL GRIDS ----
@@ -901,49 +1107,49 @@ function resizeCanvasToImage() {
             if (showPoseLandmarks && draggablePoseLandmarks.length > 0 && !isManualGridModeActive && !isDrawingManualGrid && !isAdjustingManualGrid) {
                 drawPoseLandmarksInternal();
             }
-            if (isDrawingManualGrid) { drawManualGridSelection(); }
-            else if (isAdjustingManualGrid && manualGridRect) { drawAdjustableGridSquare(); }
-            else if (showFinalManualGrid && finalManualGridRect) { drawGridFromRect(finalManualGridRect); }
+            if (isDrawingManualGrid) {drawManualGridSelection();}
+            else if (isAdjustingManualGrid && manualGridRect) {drawAdjustableGridSquare();}
+            else if (showFinalManualGrid && finalManualGridRect) {drawGridFromRect(finalManualGridRect);}
             updateIconStates();
         }
 
         // --- Face Detection & Drawing ---
         // ... (Unchanged: showFaceSelectionModal, hideFaceSelectionModal, handleFaceSelection, drawFaceLandmarksInternal, handleFaceIconClick) ...
         function showFaceSelectionModal(numFaces) {
-             modalFaceButtons.innerHTML = ''; for (let i = 0; i < numFaces; i++) {const b = document.createElement('button'); b.textContent = `Face ${i + 1}`; b.classList.add('select-face-btn'); b.dataset.index = i; b.addEventListener('click', handleFaceSelection); modalFaceButtons.appendChild(b);} faceSelectionModal.classList.add('visible');
-         }
-        function hideFaceSelectionModal() { faceSelectionModal.classList.remove('visible'); }
+            modalFaceButtons.innerHTML = ''; for (let i = 0; i < numFaces; i++) {const b = document.createElement('button'); b.textContent = `Face ${i + 1}`; b.classList.add('select-face-btn'); b.dataset.index = i; b.addEventListener('click', handleFaceSelection); modalFaceButtons.appendChild(b);} faceSelectionModal.classList.add('visible');
+        }
+        function hideFaceSelectionModal() {faceSelectionModal.classList.remove('visible');}
         function handleFaceSelection(event) {
-             const idx = parseInt(event.target.dataset.index, 10); selectedReferenceFaceIndex = idx; addComment(`Selected Face ${idx + 1} for grid.`, 'success', 'User'); hideFaceSelectionModal(); redrawCanvas();
-         }
+            const idx = parseInt(event.target.dataset.index, 10); selectedReferenceFaceIndex = idx; addComment(`Selected Face ${idx + 1} for grid.`, 'success', 'User'); hideFaceSelectionModal(); redrawCanvas();
+        }
         function drawFaceLandmarksInternal(results, gridFaceIndex = null) {
-             if (!results?.faceLandmarks || !drawingUtils || results.faceLandmarks.length === 0) return;
-             results.faceLandmarks.forEach((landmarks, index) => {
-                 const isSelected = index === gridFaceIndex;
-                 const eyeC = isSelected ? "#FF3030" : "#FFA0A0", lipC = isSelected ? "#E0E0E0" : "#B0B0B0", ovalC = isSelected ? "#E0E0E0" : "#B0B0B0";
-                 if (landmarks?.length > 0) {
-                     try {
-                         drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, { color: eyeC, lineWidth: 1 });
-                         drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, { color: eyeC, lineWidth: 1 });
-                         drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, { color: ovalC, lineWidth: 1 });
-                         drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, { color: lipC, lineWidth: 1 });
-                     } catch (e) { if (isSelected) addComment(`Error drawing basic landmarks for Face ${index + 1}.`, 'error'); }
-                 } else { if (isSelected) addComment(`No landmarks for selected Face ${index + 1}.`, 'info'); return; }
+            if (!results?.faceLandmarks || !drawingUtils || results.faceLandmarks.length === 0) return;
+            results.faceLandmarks.forEach((landmarks, index) => {
+                const isSelected = index === gridFaceIndex;
+                const eyeC = isSelected ? "#FF3030" : "#FFA0A0", lipC = isSelected ? "#E0E0E0" : "#B0B0B0", ovalC = isSelected ? "#E0E0E0" : "#B0B0B0";
+                if (landmarks?.length > 0) {
+                    try {
+                        drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, {color: eyeC, lineWidth: 1});
+                        drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, {color: eyeC, lineWidth: 1});
+                        drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, {color: ovalC, lineWidth: 1});
+                        drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {color: lipC, lineWidth: 1});
+                    } catch (e) {if (isSelected) addComment(`Error drawing basic landmarks for Face ${index + 1}.`, 'error');}
+                } else {if (isSelected) addComment(`No landmarks for selected Face ${index + 1}.`, 'info'); return;}
 
-                 if (isSelected) {
-                     const pxLm = landmarks.map(p => ({ x: p.x * overlayCanvas.width, y: p.y * overlayCanvas.height }));
-                     let fMinX = Infinity, fMaxX = -Infinity, fMinY = Infinity, fMaxY = -Infinity;
-                     pxLm.forEach(p => { fMinX = Math.min(fMinX, p.x); fMaxX = Math.max(fMaxX, p.x); fMinY = Math.min(fMinY, p.y); fMaxY = Math.max(fMaxY, p.y); });
-                     let fWidth = fMaxX - fMinX, fHeight = fMaxY - fMinY;
-                     let gridSize = Math.max(fWidth, fHeight);
-                     if (gridSize > 0) {
-                         let fMidX = (fMinX + fMaxX) / 2, fMidY = (fMinY + fMaxY) / 2;
-                         let gridStartX = fMidX - gridSize / 2, gridStartY = fMidY - gridSize / 2;
-                         drawGridFromRect({ x: gridStartX, y: gridStartY, size: gridSize });
-                     } else { addComment(`Could not determine size for face grid for Face ${index + 1}.`, 'warning'); }
-                 }
-             });
-         }
+                if (isSelected) {
+                    const pxLm = landmarks.map(p => ({x: p.x * overlayCanvas.width, y: p.y * overlayCanvas.height}));
+                    let fMinX = Infinity, fMaxX = -Infinity, fMinY = Infinity, fMaxY = -Infinity;
+                    pxLm.forEach(p => {fMinX = Math.min(fMinX, p.x); fMaxX = Math.max(fMaxX, p.x); fMinY = Math.min(fMinY, p.y); fMaxY = Math.max(fMaxY, p.y);});
+                    let fWidth = fMaxX - fMinX, fHeight = fMaxY - fMinY;
+                    let gridSize = Math.max(fWidth, fHeight);
+                    if (gridSize > 0) {
+                        let fMidX = (fMinX + fMaxX) / 2, fMidY = (fMinY + fMaxY) / 2;
+                        let gridStartX = fMidX - gridSize / 2, gridStartY = fMidY - gridSize / 2;
+                        drawGridFromRect({x: gridStartX, y: gridStartY, size: gridSize});
+                    } else {addComment(`Could not determine size for face grid for Face ${index + 1}.`, 'warning');}
+                }
+            });
+        }
         // --- Face Icon Click Handler --- MODIFIED with LOGGING ---
         function handleFaceIconClick() {
             if (!isFaceLandmarkerInitialized || !faceLandmarker || !currentImageElement || iconFace.classList.contains('disabled')) return;
@@ -979,9 +1185,9 @@ function resizeCanvasToImage() {
                         showFaceLandmarks = false; // Turn off on error
                     }
                 } else if (lastFaceDetections.faceLandmarks.length > 1 && selectedReferenceFaceIndex === null) {
-                     addComment(`Select face for grid.`, 'info');
-                     showFaceSelectionModal(lastFaceDetections.faceLandmarks.length);
-                     return; // Wait for selection
+                    addComment(`Select face for grid.`, 'info');
+                    showFaceSelectionModal(lastFaceDetections.faceLandmarks.length);
+                    return; // Wait for selection
                 }
                 redrawCanvas(); // Redraw only if detection ran or selection exists
             } else {
@@ -993,87 +1199,114 @@ function resizeCanvasToImage() {
         }
 
 
-        // --- Pose Detection & Drawing ---
-        // ... (Unchanged: drawPoseLandmarksInternal) ...
-        function drawPoseLandmarksInternal() {
-             if (!draggablePoseLandmarks || draggablePoseLandmarks.length === 0 || !drawingUtils) return;
-             const connections = PoseLandmarker.POSE_CONNECTIONS;
-             if (!connections) { console.error("Pose connections not available."); return; }
-             canvasCtx.strokeStyle = '#00FF00'; canvasCtx.lineWidth = 2;
-             connections.forEach((c) => {
-                 const sIdx = c.start, eIdx = c.end;
-                 if (sIdx <= 10 || eIdx <= 10) return; // Skip face
-                 if (sIdx < draggablePoseLandmarks.length && eIdx < draggablePoseLandmarks.length) {
-                     const sP = draggablePoseLandmarks[sIdx], eP = draggablePoseLandmarks[eIdx];
-                     canvasCtx.beginPath(); canvasCtx.moveTo(sP.x, sP.y); canvasCtx.lineTo(eP.x, eP.y); canvasCtx.stroke();
-                 }
-             });
-             canvasCtx.fillStyle = '#FF0000';
-             draggablePoseLandmarks.forEach((p, i) => {
-                 if (i <= 10) return; // Skip face points
-                 canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, pointRadius, 0, 2 * Math.PI); canvasCtx.fill();
-                 if (isDraggingPosePoint && i === draggedPointIndex) {
-                     canvasCtx.strokeStyle = '#0000FF'; canvasCtx.lineWidth = 2; canvasCtx.stroke();
-                 }
-             });
-         }
-        // --- Pose Icon Click Handler --- MODIFIED with LOGGING ---
-        function handlePoseIconClick() {
-            if (!isPoseLandmarkerInitialized || !poseLandmarker || !currentImageElement || iconPose.classList.contains('disabled')) return;
-            showPoseLandmarks = !showPoseLandmarks;
-            if (showPoseLandmarks) {
-                addComment('Showing pose landmarks...', 'info');
-                if (!lastPoseDetections) { // Detect only if no data
-                    addComment('Running pose detection...', 'info');
-                    try {
-                        console.log(`Running pose detection on image: ${currentImageElement.src.substring(0, 100)}...`); // Log source
-                        const results = poseLandmarker.detect(currentImageElement);
-                        if (results.landmarks.length > 0) {
-                            addComment(`Found ${results.landmarks.length} pose(s). Using first pose.`, 'success');
-                            lastPoseDetections = results;
-                            // --- Log initial calculation ---
-                            console.log(`Initial Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
-                            draggablePoseLandmarks = results.landmarks[0].map((lm, index) => {
-                                const pixelX = lm.x * overlayCanvas.width;
-                                const pixelY = lm.y * overlayCanvas.height;
-                                if (index === 0) { // Log nose point
-                                     console.log(`Initial Calc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
-                                }
-                                return { x: pixelX, y: pixelY, visibility: lm.visibility };
-                            });
-                            // --- End Log ---
-                        } else {
-                            addComment('No poses detected.', 'info');
-                            lastPoseDetections = null;
-                            draggablePoseLandmarks = [];
-                            showPoseLandmarks = false; // Turn off if no poses
-                        }
-                    } catch (error) {
-                        addComment(`Pose detection failed: ${error}`, 'error');
-                        console.error("Pose detection error:", error); // Log the full error
-                        lastPoseDetections = null;
-                        draggablePoseLandmarks = [];
-                        showPoseLandmarks = false; // Turn off on error
-                    }
-                } else if (draggablePoseLandmarks.length === 0 && lastPoseDetections?.landmarks?.length > 0) {
-                    // Recalculate draggable points if they were cleared but data exists
-                    addComment('Restoring previous pose data...', 'info');
-                     console.log(`Restore Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
-                    draggablePoseLandmarks = lastPoseDetections.landmarks[0].map((lm, index) => {
-                         const pixelX = lm.x * overlayCanvas.width;
-                         const pixelY = lm.y * overlayCanvas.height;
-                          if (index === 0) { // Log nose point
-                               console.log(`Restore Calc Nose (idx 0): Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
-                          }
-                         return { x: pixelX, y: pixelY, visibility: lm.visibility };
+// --- Pose Icon Click Handler --- MODIFIED with LOGGING & MULTI-POSE ---
+function handlePoseIconClick() {
+    if (!isPoseLandmarkerInitialized || !poseLandmarker || !currentImageElement || iconPose.classList.contains('disabled')) return;
+    showPoseLandmarks = !showPoseLandmarks;
+    if (showPoseLandmarks) {
+        addComment('Showing pose landmarks...', 'info');
+        if (!lastPoseDetections) { // Detect only if no data
+            addComment('Running pose detection...', 'info');
+            try {
+                console.log(`Running pose detection on image: ${currentImageElement.src.substring(0, 100)}...`);
+                const results = poseLandmarker.detect(currentImageElement);
+                if (results.landmarks.length > 0) {
+                    // MODIFICATION: Update comment for multiple poses
+                    addComment(`Found ${results.landmarks.length} pose(s).`, 'success');
+                    lastPoseDetections = results;
+                    console.log(`Initial Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
+                    // MODIFICATION: Process all detected poses
+                    draggablePoseLandmarks = results.landmarks.map((singlePoseLms, poseIdx) => {
+                        return singlePoseLms.map((lm, lmIdx) => {
+                            const pixelX = lm.x * overlayCanvas.width;
+                            const pixelY = lm.y * overlayCanvas.height;
+                            if (poseIdx === 0 && lmIdx === 0) { // Log first point of first pose
+                                console.log(`Initial Calc Pose 0, Lm 0: Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                            }
+                            return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                        });
                     });
+                } else {
+                    addComment('No poses detected.', 'info');
+                    lastPoseDetections = null;
+                    draggablePoseLandmarks = [];
+                    showPoseLandmarks = false;
                 }
-                redrawCanvas(); // Redraw now
-            } else {
-                addComment('Hiding pose landmarks.', 'info');
-                redrawCanvas(); // Redraw without pose
+            } catch (error) {
+                addComment(`Pose detection failed: ${error}`, 'error');
+                console.error("Pose detection error:", error);
+                lastPoseDetections = null;
+                draggablePoseLandmarks = [];
+                showPoseLandmarks = false;
             }
-            updateIconStates();
+        } else if (draggablePoseLandmarks.length === 0 && lastPoseDetections?.landmarks?.length > 0) {
+            addComment('Restoring previous pose data...', 'info');
+            console.log(`Restore Pose Calc: Using canvas W/H: ${overlayCanvas.width}x${overlayCanvas.height}`);
+            // MODIFICATION: Process all detected poses from lastDetections
+            draggablePoseLandmarks = lastPoseDetections.landmarks.map((singlePoseLms, poseIdx) => {
+                return singlePoseLms.map((lm, lmIdx) => {
+                    const pixelX = lm.x * overlayCanvas.width;
+                    const pixelY = lm.y * overlayCanvas.height;
+                    if (poseIdx === 0 && lmIdx === 0) {
+                         console.log(`Restore Calc Pose 0, Lm 0: Norm (${lm.x.toFixed(3)}, ${lm.y.toFixed(3)}) -> Pixel (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                    }
+                    return { x: pixelX, y: pixelY, visibility: lm.visibility };
+                });
+            });
+        }
+        redrawCanvas();
+    } else {
+        addComment('Hiding pose landmarks.', 'info');
+        redrawCanvas();
+    }
+    updateIconStates();
+}
+
+        function drawPoseLandmarksInternal() {
+            if (!draggablePoseLandmarks || draggablePoseLandmarks.length === 0 || !drawingUtils) return;
+            const connections = PoseLandmarker.POSE_CONNECTIONS;
+            if (!connections) {console.error("Pose connections not available."); return;}
+
+            // MODIFICATION: Iterate through each pose in draggablePoseLandmarks
+            draggablePoseLandmarks.forEach((singlePoseLandmarks, poseDrawingIdx) => {
+                if (!singlePoseLandmarks || singlePoseLandmarks.length === 0) return; // Skip if a pose has no landmarks
+
+                // You can assign different colors per pose if desired, e.g., based on poseDrawingIdx
+                const poseColor = ['#00FF00', '#00FFFF', '#FF00FF'][poseDrawingIdx % 3] || '#00FF00'; // Example: cycle colors
+                const pointColor = ['#FF0000', '#FFFF00', '#0000FF'][poseDrawingIdx % 3] || '#FF0000';
+
+                canvasCtx.strokeStyle = poseColor;
+                canvasCtx.lineWidth = 2;
+                connections.forEach((c) => {
+                    const sIdx = c.start, eIdx = c.end;
+                    if (sIdx <= 10 || eIdx <= 10) return; // Skip face landmarks (indices 0-10 are typically face)
+                    if (sIdx < singlePoseLandmarks.length && eIdx < singlePoseLandmarks.length) {
+                        const sP = singlePoseLandmarks[sIdx], eP = singlePoseLandmarks[eIdx];
+                        // Ensure points are valid before drawing
+                        if (sP && eP && typeof sP.x === 'number' && typeof sP.y === 'number' && typeof eP.x === 'number' && typeof eP.y === 'number') {
+                            canvasCtx.beginPath(); canvasCtx.moveTo(sP.x, sP.y); canvasCtx.lineTo(eP.x, eP.y); canvasCtx.stroke();
+                        }
+                    }
+                });
+
+                canvasCtx.fillStyle = pointColor;
+                singlePoseLandmarks.forEach((p, landmarkDrawingIdx) => {
+                    if (landmarkDrawingIdx <= 10) return; // Skip face points
+                    // Ensure point is valid
+                    if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+                        canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, pointRadius, 0, 2 * Math.PI); canvasCtx.fill();
+
+                        // MODIFICATION: Highlight dragged point using draggedPointInfo
+                        if (isDraggingPosePoint && draggedPointInfo &&
+                            draggedPointInfo.poseIndex === poseDrawingIdx &&
+                            draggedPointInfo.pointIndex === landmarkDrawingIdx) {
+                            canvasCtx.strokeStyle = '#0000FF'; // Highlight color for dragged point
+                            canvasCtx.lineWidth = 2;           // Make highlight distinct
+                            canvasCtx.stroke();                // Draw the highlight circle
+                        }
+                    }
+                });
+            });
         }
 
 
@@ -1092,9 +1325,9 @@ function resizeCanvasToImage() {
                     addComment('Manual Grid Mode: Click and drag on the image to define the grid square.', 'info', 'User');
                     resetManualGridState(false);
                 } else {
-                    if (isAdjustingManualGrid) { addComment('Manual grid adjustment cancelled.', 'info'); }
-                    else if (isDrawingManualGrid) { addComment('Manual grid drawing cancelled.', 'info'); }
-                    else { addComment('Exiting manual grid mode.', 'info'); }
+                    if (isAdjustingManualGrid) {addComment('Manual grid adjustment cancelled.', 'info');}
+                    else if (isDrawingManualGrid) {addComment('Manual grid drawing cancelled.', 'info');}
+                    else {addComment('Exiting manual grid mode.', 'info');}
                     resetManualGridState(false);
                 }
             }
@@ -1112,17 +1345,17 @@ function resizeCanvasToImage() {
         }
         function drawAdjustableGridSquare() {
             if (!manualGridRect || manualGridRect.size <= 0) return;
-            const { x, y, size } = manualGridRect;
+            const {x, y, size} = manualGridRect;
             canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; canvasCtx.lineWidth = 2;
             canvasCtx.strokeRect(x, y, size, size);
         }
         function calculateAndUpdateHandlePositions() {
             adjustmentHandles = [];
-            if (!manualGridRect || !isAdjustingManualGrid) { updateAdjustmentHandles(); return; }
-            const { x, y, size } = manualGridRect; const halfSize = size / 2;
+            if (!manualGridRect || !isAdjustingManualGrid) {updateAdjustmentHandles(); return;}
+            const {x, y, size} = manualGridRect; const halfSize = size / 2;
             adjustmentHandles = [
-                { type: 'tl', x: x, y: y }, { type: 'tr', x: x + size, y: y }, { type: 'bl', x: x, y: y + size }, { type: 'br', x: x + size, y: y + size },
-                { type: 'tm', x: x + halfSize, y: y }, { type: 'bm', x: x + halfSize, y: y + size }, { type: 'ml', x: x, y: y + halfSize }, { type: 'mr', x: x + size, y: y + halfSize }
+                {type: 'tl', x: x, y: y}, {type: 'tr', x: x + size, y: y}, {type: 'bl', x: x, y: y + size}, {type: 'br', x: x + size, y: y + size},
+                {type: 'tm', x: x + halfSize, y: y}, {type: 'bm', x: x + halfSize, y: y + size}, {type: 'ml', x: x, y: y + halfSize}, {type: 'mr', x: x + size, y: y + halfSize}
             ];
             updateAdjustmentHandles();
         }
@@ -1138,46 +1371,46 @@ function resizeCanvasToImage() {
             });
         }
         function drawGridFromRect(gridRect) {
-             if (!gridRect || gridRect.size <= 0) return;
-             const { x: startX, y: startY, size } = gridRect;
-             const endX = startX + size; const endY = startY + size;
-             const canvasWidth = overlayCanvas.width; const canvasHeight = overlayCanvas.height;
-             canvasCtx.lineWidth = 1;
+            if (!gridRect || gridRect.size <= 0) return;
+            const {x: startX, y: startY, size} = gridRect;
+            const endX = startX + size; const endY = startY + size;
+            const canvasWidth = overlayCanvas.width; const canvasHeight = overlayCanvas.height;
+            canvasCtx.lineWidth = 1;
 
-             // Vertical Lines (Cyan)
-             canvasCtx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-             for (let currentX = startX; currentX < canvasWidth + size; currentX += size) { if (currentX >= -size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke(); } if (size === 0) break; }
-             for (let currentX = startX - size; currentX > -size; currentX -= size) { if (currentX < canvasWidth + size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke(); } if (size === 0) break; }
+            // Vertical Lines (Cyan)
+            canvasCtx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+            for (let currentX = startX; currentX < canvasWidth + size; currentX += size) {if (currentX >= -size && size > 0) {canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke();} if (size === 0) break;}
+            for (let currentX = startX - size; currentX > -size; currentX -= size) {if (currentX < canvasWidth + size && size > 0) {canvasCtx.beginPath(); canvasCtx.moveTo(currentX, 0); canvasCtx.lineTo(currentX, canvasHeight); canvasCtx.stroke();} if (size === 0) break;}
 
-             // Horizontal Lines (Yellow)
-             canvasCtx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-             for (let currentY = startY; currentY < canvasHeight + size; currentY += size) { if (currentY >= -size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke(); } if (size === 0) break; }
-             for (let currentY = startY - size; currentY > -size; currentY -= size) { if (currentY < canvasHeight + size && size > 0) { canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke(); } if (size === 0) break; }
+            // Horizontal Lines (Yellow)
+            canvasCtx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            for (let currentY = startY; currentY < canvasHeight + size; currentY += size) {if (currentY >= -size && size > 0) {canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke();} if (size === 0) break;}
+            for (let currentY = startY - size; currentY > -size; currentY -= size) {if (currentY < canvasHeight + size && size > 0) {canvasCtx.beginPath(); canvasCtx.moveTo(0, currentY); canvasCtx.lineTo(canvasWidth, currentY); canvasCtx.stroke();} if (size === 0) break;}
 
-             // Inner Thirds Lines
-             if (size > 0) {
-                 const thirdSize = size / 3;
-                 canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)'; // Green
-                 canvasCtx.beginPath(); canvasCtx.moveTo(startX + thirdSize, startY); canvasCtx.lineTo(startX + thirdSize, endY); canvasCtx.stroke();
-                 canvasCtx.beginPath(); canvasCtx.moveTo(startX + 2 * thirdSize, startY); canvasCtx.lineTo(startX + 2 * thirdSize, endY); canvasCtx.stroke();
-                 canvasCtx.strokeStyle = 'rgba(255, 0, 0, 0.7)'; // Red
-                 canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + thirdSize); canvasCtx.lineTo(endX, startY + thirdSize); canvasCtx.stroke();
-                 canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + 2 * thirdSize); canvasCtx.lineTo(endX, startY + 2 * thirdSize); canvasCtx.stroke();
-             }
+            // Inner Thirds Lines
+            if (size > 0) {
+                const thirdSize = size / 3;
+                canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)'; // Green
+                canvasCtx.beginPath(); canvasCtx.moveTo(startX + thirdSize, startY); canvasCtx.lineTo(startX + thirdSize, endY); canvasCtx.stroke();
+                canvasCtx.beginPath(); canvasCtx.moveTo(startX + 2 * thirdSize, startY); canvasCtx.lineTo(startX + 2 * thirdSize, endY); canvasCtx.stroke();
+                canvasCtx.strokeStyle = 'rgba(255, 0, 0, 0.7)'; // Red
+                canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + thirdSize); canvasCtx.lineTo(endX, startY + thirdSize); canvasCtx.stroke();
+                canvasCtx.beginPath(); canvasCtx.moveTo(startX, startY + 2 * thirdSize); canvasCtx.lineTo(endX, startY + 2 * thirdSize); canvasCtx.stroke();
+            }
 
-             // Defining square outline
-             canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; canvasCtx.lineWidth = 2;
-             canvasCtx.strokeRect(startX, startY, size, size);
-         }
+            // Defining square outline
+            canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)'; canvasCtx.lineWidth = 2;
+            canvasCtx.strokeRect(startX, startY, size, size);
+        }
 
         // --- Mouse/Touch Interaction Logic ---
         // ... (Unchanged: getMousePos, handleMouseDown, handleMouseMove, handleMouseUp) ...
         function getMousePos(canvas, evt) {
-             const rect = canvas.getBoundingClientRect();
-             const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-             const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
-             return { x: clientX - rect.left, y: clientY - rect.top };
-         }
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {x: clientX - rect.left, y: clientY - rect.top};
+        }
         function handleMouseDown(e) {
             const pos = getMousePos(overlayCanvas, e); let interactionStarted = false;
             if (isAdjustingManualGrid) {
@@ -1192,7 +1425,7 @@ function resizeCanvasToImage() {
                     }
                 }
                 if (!handleClicked && manualGridRect) {
-                    const { x, y, size } = manualGridRect;
+                    const {x, y, size} = manualGridRect;
                     if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) {
                         isDraggingGridSquare = true; draggedHandleType = null;
                         dragOffsetX = pos.x - x; dragOffsetY = pos.y - y;
@@ -1204,65 +1437,80 @@ function resizeCanvasToImage() {
                 manualGridStartX = pos.x; manualGridStartY = pos.y;
                 manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
                 manualGridRect = null; interactionStarted = true;
-            } else if (showPoseLandmarks) {
-                for (let i = 0; i < draggablePoseLandmarks.length; i++) {
-                    if (i <= 10) continue; const p = draggablePoseLandmarks[i];
-                    const dx = pos.x - p.x; const dy = pos.y - p.y;
-                    if (dx * dx + dy * dy < hitRadius * hitRadius) {
-                        isDraggingPosePoint = true; draggedPointIndex = i;
-                        dragOffsetX = dx; dragOffsetY = dy;
-                        interactionStarted = true; break;
+            } else if (showPoseLandmarks && draggablePoseLandmarks.length > 0) {
+                for (let poseIdx = 0; poseIdx < draggablePoseLandmarks.length; poseIdx++) {
+                    const singlePoseLandmarks = draggablePoseLandmarks[poseIdx];
+                    for (let lmIdx = 0; lmIdx < singlePoseLandmarks.length; lmIdx++) {
+                        if (lmIdx <= 10) continue; // Skip face points
+                        const p = singlePoseLandmarks[lmIdx];
+                        if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') continue; // Skip invalid points
+
+                        const dx = pos.x - p.x; const dy = pos.y - p.y;
+                        if (dx * dx + dy * dy < hitRadius * hitRadius) {
+                            isDraggingPosePoint = true;
+                            // MODIFICATION: Store pose and point index
+                            draggedPointInfo = {poseIndex: poseIdx, pointIndex: lmIdx};
+                            dragOffsetX = dx; dragOffsetY = dy;
+                            interactionStarted = true;
+                            break; // Found a point in this pose
+                        }
                     }
+                    if (interactionStarted) break; // Found a point, stop checking other poses
                 }
             }
-            if (interactionStarted) { if (e.touches) e.preventDefault(); redrawCanvas(); }
+            if (interactionStarted) {if (e.touches) e.preventDefault(); redrawCanvas();}
         }
         function handleMouseMove(e) {
-             const isDragging = draggedHandleType || isDraggingGridSquare || isDrawingManualGrid || isDraggingPosePoint;
-             if (isDragging && e.touches) e.preventDefault();
-             const pos = getMousePos(overlayCanvas, e);
-             isHoveringPosePoint = false; isHoveringGridHandle = false; isHoveringGridSquare = false;
+            const isDragging = draggedHandleType || isDraggingGridSquare || isDrawingManualGrid || isDraggingPosePoint;
+            if (isDragging && e.touches) e.preventDefault();
+            const pos = getMousePos(overlayCanvas, e);
+            isHoveringPosePoint = false; isHoveringGridHandle = false; isHoveringGridSquare = false;
 
-             if (draggedHandleType && isAdjustingManualGrid && manualGridRect) {
-                 const currentX = pos.x; const currentY = pos.y;
-                 let { x, y, size } = manualGridRect; let newX = x, newY = y, newSize = size;
-                 const rightEdge = x + size; const bottomEdge = y + size;
-                 switch (draggedHandleType) {
-                     case 'tl': const dX_tl = rightEdge - currentX; const dY_tl = bottomEdge - currentY; newSize = Math.max(dX_tl, dY_tl, MIN_GRID_SIZE); newX = rightEdge - newSize; newY = bottomEdge - newSize; break;
-                     case 'tr': const dX_tr = currentX - x; const dY_tr = bottomEdge - currentY; newSize = Math.max(dX_tr, dY_tr, MIN_GRID_SIZE); newY = bottomEdge - newSize; break;
-                     case 'bl': const dX_bl = rightEdge - currentX; const dY_bl = currentY - y; newSize = Math.max(dX_bl, dY_bl, MIN_GRID_SIZE); newX = rightEdge - newSize; break;
-                     case 'br': const dX_br = currentX - x; const dY_br = currentY - y; newSize = Math.max(dX_br, dY_br, MIN_GRID_SIZE); break;
-                     case 'tm': newSize = Math.max(bottomEdge - currentY, MIN_GRID_SIZE); const sCY_tm = size - newSize; newX = x + sCY_tm / 2; newY = bottomEdge - newSize; break;
-                     case 'bm': newSize = Math.max(currentY - y, MIN_GRID_SIZE); const sCY_bm = size - newSize; newX = x + sCY_bm / 2; break;
-                     case 'ml': newSize = Math.max(rightEdge - currentX, MIN_GRID_SIZE); const sCX_ml = size - newSize; newX = rightEdge - newSize; newY = y + sCX_ml / 2; break;
-                     case 'mr': newSize = Math.max(currentX - x, MIN_GRID_SIZE); const sCX_mr = size - newSize; newY = y + sCX_mr / 2; break;
-                 }
-                 manualGridRect = { x: newX, y: newY, size: newSize };
-                 calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
-             } else if (isDraggingGridSquare && isAdjustingManualGrid && manualGridRect) {
-                  manualGridRect.x = pos.x - dragOffsetX; manualGridRect.y = pos.y - dragOffsetY;
-                  manualGridRect.x = Math.max(0, Math.min(overlayCanvas.width - manualGridRect.size, manualGridRect.x));
-                  manualGridRect.y = Math.max(0, Math.min(overlayCanvas.height - manualGridRect.size, manualGridRect.y));
-                  calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
-             } else if (isDrawingManualGrid) {
-                 manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
-                 requestAnimationFrame(redrawCanvas);
-             } else if (isDraggingPosePoint && draggedPointIndex !== -1) {
-                 const dP = draggablePoseLandmarks[draggedPointIndex];
-                 dP.x = pos.x - dragOffsetX; dP.y = pos.y - dragOffsetY;
-                 dP.x = Math.max(0, Math.min(overlayCanvas.width, dP.x)); dP.y = Math.max(0, Math.min(overlayCanvas.height, dP.y));
-                 requestAnimationFrame(redrawCanvas);
-             } else {
-                  if (showPoseLandmarks && !definingManualGrid) {
-                      for (let i = 0; i < draggablePoseLandmarks.length; i++) { if (i <= 10) continue; const p = draggablePoseLandmarks[i]; const dx = pos.x - p.x; const dy = pos.y - p.y; if (dx * dx + dy * dy < hitRadius * hitRadius) { isHoveringPosePoint = true; break; } }
-                  }
-                  if (isAdjustingManualGrid && manualGridRect) {
-                      for (const handle of adjustmentHandles) { const dx = pos.x - handle.x; const dy = pos.y - handle.y; if (dx * dx + dy * dy < handleHitRadius * handleHitRadius) { isHoveringGridHandle = true; break; } }
-                      if (!isHoveringGridHandle) { const { x, y, size } = manualGridRect; if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) { isHoveringGridSquare = true; } }
-                  }
-                  updateIconStates();
-             }
-         }
+            if (draggedHandleType && isAdjustingManualGrid && manualGridRect) {
+                const currentX = pos.x; const currentY = pos.y;
+                let {x, y, size} = manualGridRect; let newX = x, newY = y, newSize = size;
+                const rightEdge = x + size; const bottomEdge = y + size;
+                switch (draggedHandleType) {
+                    case 'tl': const dX_tl = rightEdge - currentX; const dY_tl = bottomEdge - currentY; newSize = Math.max(dX_tl, dY_tl, MIN_GRID_SIZE); newX = rightEdge - newSize; newY = bottomEdge - newSize; break;
+                    case 'tr': const dX_tr = currentX - x; const dY_tr = bottomEdge - currentY; newSize = Math.max(dX_tr, dY_tr, MIN_GRID_SIZE); newY = bottomEdge - newSize; break;
+                    case 'bl': const dX_bl = rightEdge - currentX; const dY_bl = currentY - y; newSize = Math.max(dX_bl, dY_bl, MIN_GRID_SIZE); newX = rightEdge - newSize; break;
+                    case 'br': const dX_br = currentX - x; const dY_br = currentY - y; newSize = Math.max(dX_br, dY_br, MIN_GRID_SIZE); break;
+                    case 'tm': newSize = Math.max(bottomEdge - currentY, MIN_GRID_SIZE); const sCY_tm = size - newSize; newX = x + sCY_tm / 2; newY = bottomEdge - newSize; break;
+                    case 'bm': newSize = Math.max(currentY - y, MIN_GRID_SIZE); const sCY_bm = size - newSize; newX = x + sCY_bm / 2; break;
+                    case 'ml': newSize = Math.max(rightEdge - currentX, MIN_GRID_SIZE); const sCX_ml = size - newSize; newX = rightEdge - newSize; newY = y + sCX_ml / 2; break;
+                    case 'mr': newSize = Math.max(currentX - x, MIN_GRID_SIZE); const sCX_mr = size - newSize; newY = y + sCX_mr / 2; break;
+                }
+                manualGridRect = {x: newX, y: newY, size: newSize};
+                calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
+            } else if (isDraggingGridSquare && isAdjustingManualGrid && manualGridRect) {
+                manualGridRect.x = pos.x - dragOffsetX; manualGridRect.y = pos.y - dragOffsetY;
+                manualGridRect.x = Math.max(0, Math.min(overlayCanvas.width - manualGridRect.size, manualGridRect.x));
+                manualGridRect.y = Math.max(0, Math.min(overlayCanvas.height - manualGridRect.size, manualGridRect.y));
+                calculateAndUpdateHandlePositions(); requestAnimationFrame(redrawCanvas);
+            } else if (isDrawingManualGrid) {
+                manualGridCurrentX = pos.x; manualGridCurrentY = pos.y;
+                requestAnimationFrame(redrawCanvas);
+            } else if (isDraggingPosePoint && draggedPointInfo) {
+                const dP = draggablePoseLandmarks[draggedPointInfo.poseIndex][draggedPointInfo.pointIndex];
+                if (dP) {
+                    dP.x = pos.x - dragOffsetX; dP.y = pos.y - dragOffsetY;
+                    dP.x = Math.max(0, Math.min(overlayCanvas.width, dP.x));
+                    dP.y = Math.max(0, Math.min(overlayCanvas.height, dP.y));
+                    requestAnimationFrame(redrawCanvas);
+                }
+            } else {
+                const definingManualGrid = isManualGridModeActive || isDrawingManualGrid || isAdjustingManualGrid;
+
+                if (showPoseLandmarks && !definingManualGrid) {
+                    for (let i = 0; i < draggablePoseLandmarks.length; i++) {if (i <= 10) continue; const p = draggablePoseLandmarks[i]; const dx = pos.x - p.x; const dy = pos.y - p.y; if (dx * dx + dy * dy < hitRadius * hitRadius) {isHoveringPosePoint = true; break;} }
+                }
+                if (isAdjustingManualGrid && manualGridRect) {
+                    for (const handle of adjustmentHandles) {const dx = pos.x - handle.x; const dy = pos.y - handle.y; if (dx * dx + dy * dy < handleHitRadius * handleHitRadius) {isHoveringGridHandle = true; break;} }
+                    if (!isHoveringGridHandle) {const {x, y, size} = manualGridRect; if (pos.x >= x && pos.x <= x + size && pos.y >= y && pos.y <= y + size) {isHoveringGridSquare = true;} }
+                }
+                updateIconStates();
+            }
+        }
         function handleMouseUp(e) {
             if (draggedHandleType || isDraggingGridSquare) {
                 draggedHandleType = null; isDraggingGridSquare = false; redrawCanvas();
@@ -1273,7 +1521,7 @@ function resizeCanvasToImage() {
                 if (size >= MIN_GRID_SIZE) {
                     const finalStartX = width >= 0 ? manualGridStartX : manualGridStartX - size;
                     const finalStartY = height >= 0 ? manualGridStartY : manualGridStartY - size;
-                    manualGridRect = { x: finalStartX, y: finalStartY, size: size };
+                    manualGridRect = {x: finalStartX, y: finalStartY, size: size};
                     isAdjustingManualGrid = true;
                     addComment(`Grid square drawn. Adjust size/position and click Confirm.`, 'info', 'User');
                     calculateAndUpdateHandlePositions();
@@ -1283,7 +1531,8 @@ function resizeCanvasToImage() {
                 }
                 redrawCanvas(); updateIconStates();
             } else if (isDraggingPosePoint) {
-                isDraggingPosePoint = false; draggedPointIndex = -1;
+                isDraggingPosePoint = false;
+                draggedPointInfo = null;
                 dragOffsetX = 0; dragOffsetY = 0;
                 redrawCanvas(); updateIconStates();
             }
@@ -1294,7 +1543,7 @@ function resizeCanvasToImage() {
         function handleConfirmGrid() {
             if (!isAdjustingManualGrid || !manualGridRect) return;
             addComment('Manual grid confirmed.', 'success', 'User');
-            finalManualGridRect = { ...manualGridRect };
+            finalManualGridRect = {...manualGridRect};
             showFinalManualGrid = true;
             isAdjustingManualGrid = false; isManualGridModeActive = false;
             resetManualGridState(false);
@@ -1307,29 +1556,29 @@ function resizeCanvasToImage() {
             event.preventDefault(); event.stopPropagation();
             const dt = event.dataTransfer;
             if (dt.types.includes('Files') || dt.types.includes('text/uri-list') || dt.types.includes('text/html')) {
-                 bodyElement.classList.add('dragover'); dt.dropEffect = 'copy';
-            } else { dt.dropEffect = 'none'; }
+                bodyElement.classList.add('dragover'); dt.dropEffect = 'copy';
+            } else {dt.dropEffect = 'none';}
         }
         function handleDragLeave(event) {
             event.preventDefault(); event.stopPropagation();
-            if (!bodyElement.contains(event.relatedTarget)) { bodyElement.classList.remove('dragover'); }
+            if (!bodyElement.contains(event.relatedTarget)) {bodyElement.classList.remove('dragover');}
         }
         function handleDrop(event) {
             event.preventDefault(); event.stopPropagation(); bodyElement.classList.remove('dragover');
             resetCommonState(); // Reset state *before* processing drop
             const dt = event.dataTransfer; const files = dt.files; let processed = false;
             if (files.length > 0) {
-                for (let i = 0; i < files.length; i++) { if (files[i].type.startsWith('image/')) { processImageFile(files[i]); processed = true; break; } }
+                for (let i = 0; i < files.length; i++) {if (files[i].type.startsWith('image/')) {processImageFile(files[i]); processed = true; break;} }
             }
             if (!processed && dt.types.includes('text/uri-list')) {
                 const uriList = dt.getData('text/uri-list'); const lines = uriList.split('\n');
-                for(const line of lines) { const url = line.trim(); if (url && !url.startsWith('#') && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(url)) { processImageUrl(url); processed = true; break; } }
-                if (!processed) { console.log("URI List found, but no valid image URL detected:", uriList); }
+                for (const line of lines) {const url = line.trim(); if (url && !url.startsWith('#') && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(url)) {processImageUrl(url); processed = true; break;} }
+                if (!processed) {console.log("URI List found, but no valid image URL detected:", uriList);}
             }
             if (!processed && dt.types.includes('text/html')) {
                 const html = dt.getData('text/html');
-                try { const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; const imgElement = tempDiv.querySelector('img'); if (imgElement?.src) { processImageUrl(imgElement.src); processed = true; } else { console.log("HTML found, but no <img> tag with src detected:", html); } }
-                catch (e) { console.error("Error parsing dropped HTML:", e); }
+                try {const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; const imgElement = tempDiv.querySelector('img'); if (imgElement?.src) {processImageUrl(imgElement.src); processed = true;} else {console.log("HTML found, but no <img> tag with src detected:", html);} }
+                catch (e) {console.error("Error parsing dropped HTML:", e);}
             }
             if (!processed) {
                 addComment('Could not find a valid image file or URL in the dropped item.', 'error');
@@ -1343,10 +1592,10 @@ function resizeCanvasToImage() {
         iconFace.addEventListener('click', handleFaceIconClick);
         iconPose.addEventListener('click', handlePoseIconClick);
         iconGrid.addEventListener('click', handleGridIconClick);
-        iconRestart.addEventListener('click', () => { if (currentImageElement || !imagePreviewContainer.classList.contains('hidden')) clearOverlays(); });
+        iconRestart.addEventListener('click', () => {if (currentImageElement || !imagePreviewContainer.classList.contains('hidden')) clearOverlays();});
         confirmGridButton.addEventListener('click', handleConfirmGrid);
-        cancelModalButton.addEventListener('click', () => { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); });
-        faceSelectionModal.addEventListener('click', (event) => { if (event.target === faceSelectionModal) { addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas(); } });
+        cancelModalButton.addEventListener('click', () => {addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas();});
+        faceSelectionModal.addEventListener('click', (event) => {if (event.target === faceSelectionModal) {addComment('Face selection cancelled.', 'info'); hideFaceSelectionModal(); selectedReferenceFaceIndex = null; redrawCanvas();} });
 
         // External New Upload Button Listener
         newUploadButtonExt.addEventListener('click', () => {
@@ -1357,8 +1606,8 @@ function resizeCanvasToImage() {
         overlayCanvas.addEventListener('mousedown', handleMouseDown);
         overlayCanvas.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
-        overlayCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
-        overlayCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+        overlayCanvas.addEventListener('touchstart', handleMouseDown, {passive: false});
+        overlayCanvas.addEventListener('touchmove', handleMouseMove, {passive: false});
         window.addEventListener('touchend', handleMouseUp);
         window.addEventListener('touchcancel', handleMouseUp);
 
@@ -1368,7 +1617,7 @@ function resizeCanvasToImage() {
         bodyElement.addEventListener('drop', handleDrop);
 
         // Window Resize Listener
-        let resizeTimeout; window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { if (currentImageElement && !imagePreviewContainer.classList.contains('hidden')) { resizeCanvasToImage(); } }, 150); });
+        let resizeTimeout; window.addEventListener('resize', () => {clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => {if (currentImageElement && !imagePreviewContainer.classList.contains('hidden')) {resizeCanvasToImage();} }, 150);});
 
         // --- Initial Page Load Setup ---
         initializeApp();
