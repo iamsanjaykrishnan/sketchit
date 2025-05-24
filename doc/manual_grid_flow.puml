@@ -1,0 +1,115 @@
+@startuml Manual Grid Interaction Flow
+!theme materia
+
+title Manual Grid Definition and Confirmation Flow
+
+start
+
+partition "User Action" {
+  :Clicks 'Manual Grid' icon (`iconGrid`);
+}
+
+partition "Event Handling (`eventHandlers.js` - `handleGridIconClick`)" {
+  if (A confirmed grid `finalManualGridRect` already exists?) then (yes)
+    :Toggle `state.showFinalManualGrid`;
+    if (Hiding grid?) then (yes)
+        :Reset `isManualGridModeActive`, `isDrawingManualGrid`, `isAdjustingManualGrid`;
+        :Clear `manualGridRect`;
+    endif
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+    stop
+  else (no)
+    :Toggle `state.isManualGridModeActive`;
+    if (`isManualGridModeActive` is now true?) then (yes)
+      :Add comment: "Click and drag to define grid";
+      :Call `uiManager.resetManualGridState(false)`;
+    else (exiting mode)
+      :Add comment: "Manual grid mode exited/cancelled";
+      :Call `uiManager.resetManualGridState(false)`;
+    endif
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+    if (`isManualGridModeActive` is false?) then (yes)
+      stop
+    endif
+  endif
+}
+
+partition "User Action" {
+  :Presses mouse button on canvas;
+}
+
+partition "Canvas Event Handling (`eventHandlers.js` - `handleCanvasMouseDown`)" {
+  :Set `state.isDrawingManualGrid = true`;
+  :Record `state.manualGridStartX/Y` and `state.manualGridCurrentX/Y` from mouse position;
+  :Clear `state.manualGridRect`;
+  :Call `canvasManager.redrawCanvas()` (shows selection);
+  :Call `uiManager.updateIconStates()`;
+}
+
+partition "User Action" {
+  :Drags mouse on canvas;
+}
+
+partition "Canvas Event Handling (`eventHandlers.js` - `handleCanvasMouseMove`)" {
+  :Update `state.manualGridCurrentX/Y` from mouse position;
+  :Call `canvasManager.redrawCanvas()` (updates selection square);
+}
+
+partition "User Action" {
+  :Releases mouse button;
+}
+
+partition "Canvas Event Handling (`eventHandlers.js` - `handleCanvasMouseUp`)" {
+  :Set `state.isDrawingManualGrid = false`;
+  :Calculate grid `size` from start and end points;
+  if (`size` >= `config.MIN_GRID_SIZE`?) then (yes)
+    :Set `state.manualGridRect` with final {x, y, size};
+    :Set `state.isAdjustingManualGrid = true`;
+    :Set `state.isManualGridModeActive = false`;
+    :Add comment: "Grid drawn, adjust and confirm";
+    :Call `canvasManager.calculateAndUpdateHandlePositions()`;
+  else (no, too small)
+    :Add comment: "Grid too small, cancelled";
+    :Clear `state.manualGridRect`;
+    :Set `state.isManualGridModeActive = false`;
+  endif
+  :Call `canvasManager.redrawCanvas()`;
+  :Call `uiManager.updateIconStates()`;
+  if (`isAdjustingManualGrid` is false?) then (yes)
+    stop
+  endif
+}
+
+' At this point, grid is drawn and handles are visible. User can adjust or confirm.
+
+partition "User Action (Adjustment)" {
+  repeat
+    :Clicks and drags a grid adjustment handle OR the grid square itself;
+  partition "Canvas Event Handling (Adjustment - MouseDown/Move/Up)" {
+    :Logic in `handleCanvasMouseDown`, `handleCanvasMouseMove`, `handleCanvasMouseUp`;
+    :Updates `state.manualGridRect` based on drag;
+    :Calls `canvasManager.calculateAndUpdateHandlePositions()`;
+    :Calls `canvasManager.redrawCanvas()`;
+  }
+  repeat while (User keeps adjusting?) is (yes)
+}
+
+partition "User Action (Confirmation)" {
+  :Clicks 'Confirm Grid' button;
+}
+
+partition "Event Handling (`eventHandlers.js` - `handleConfirmGrid`)" {
+  :Set `state.finalManualGridRect` from `state.manualGridRect`;
+  :Set `state.showFinalManualGrid = true`;
+  :Set `state.isAdjustingManualGrid = false`;
+  :Set `state.isManualGridModeActive = false`;
+  :Clear `state.manualGridRect`;
+  :Call `canvasManager.calculateAndUpdateHandlePositions()` (removes handles);
+  :Call `canvasManager.redrawCanvas()`;
+  :Call `uiManager.updateIconStates()`;
+}
+
+stop
+@enduml
