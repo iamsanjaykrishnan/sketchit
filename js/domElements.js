@@ -1,0 +1,20 @@
+// js/domElements.js
+export const imageUpload = document.getElementById('imageUpload');
+export const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+export const imagePreview = document.getElementById('imagePreview');
+export const placeholderText = document.getElementById('placeholderText');
+export const commentArea = document.getElementById('commentArea');
+export const iconFace = document.getElementById('iconFace');
+export const iconPose = document.getElementById('iconPose');
+export const iconGrid = document.getElementById('iconGrid');
+export const iconRestart = document.getElementById('iconRestart');
+export const overlayCanvas = document.getElementById('overlayCanvas');
+export const canvasCtx = overlayCanvas ? overlayCanvas.getContext('2d') : null;
+export const faceSelectionModal = document.getElementById('faceSelectionModal');
+export const modalFaceButtons = document.getElementById('modalFaceButtons');
+export const cancelModalButton = document.getElementById('cancelModalButton');
+export const adjustmentHandlesContainer = document.getElementById('adjustmentHandlesContainer');
+export const confirmGridButton = document.getElementById('confirmGridButton');
+export const bodyElement = document.body;
+export const uploadCard = document.getElementById('uploadCard');
+export const newUploadButtonExt = document.getElementById('newUploadButtonExt');

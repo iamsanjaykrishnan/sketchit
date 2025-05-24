@@ -1,0 +1,379 @@
+/* Apply Inter font globally */
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.2s ease;
+}
+
+/* Style for dragover state */
+body.dragover {
+    background-color: #e0f2fe;
+    /* Light blue background */
+}
+
+.drop-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 4px dashed #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+body.dragover .drop-indicator {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drop-indicator-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2563eb;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+}
+
+/* Hide the default file input */
+#imageUpload {
+    display: none;
+}
+
+/* Style for the image preview container */
+.display-card {
+    max-width: 480px;
+    width: 100%;
+}
+
+/* Container for image and canvas */
+.image-display-container {
+    position: relative;
+    background-color: #f3f4f6;
+    /* bg-gray-100 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    max-height: 600px;
+}
+
+/* Ensure image fits well */
+.display-card img#imagePreview {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Canvas overlay */
+#overlayCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+    touch-action: none;
+}
+
+/* Cursors for different states */
+#overlayCanvas.manual-grid-drawing,
+#overlayCanvas.manual-grid-adjusting:not(.dragging-grid-handle):not(.dragging-grid-square):not(.handle-hover):not(.square-hover) {
+    cursor: crosshair;
+}
+
+#overlayCanvas.dragging-pose,
+#overlayCanvas.point-hover {
+    cursor: grab;
+}
+
+#overlayCanvas.dragging-grid-handle,
+#overlayCanvas.handle-hover {
+    cursor: grab;
+}
+
+#overlayCanvas.dragging-grid-square,
+#overlayCanvas.square-hover {
+    cursor: move;
+}
+
+/* Material Symbols styling */
+.material-symbols-outlined {
+    vertical-align: middle;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    display: inline-block;
+    line-height: 1;
+}
+
+.material-symbols-outlined.active {
+    color: #3b82f6;
+}
+
+.material-symbols-outlined.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    color: #6b7280;
+}
+
+.material-symbols-outlined.disabled.active {
+    color: #6b7280;
+    opacity: 0.5;
+}
+
+/* Comments area styling */
+#commentArea {
+    max-height: 100px;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #1f2937;
+}
+
+#commentArea p {
+    margin-bottom: 0.375rem;
+    word-break: break-word;
+}
+
+#commentArea .comment-username {
+    font-weight: 600;
+    margin-right: 0.375rem;
+    color: #111827;
+}
+
+#commentArea .comment-error {
+    color: #ef4444;
+}
+
+#commentArea .comment-success {
+    color: #22c55e;
+}
+
+#commentArea .comment-info {
+    color: #374151;
+}
+
+#commentArea .comment-warning {
+    color: #f97316;
+}
+
+/* Modal Styling */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-width: 90%;
+    width: 350px;
+    text-align: center;
+}
+
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+    color: #4b5563;
+}
+
+.modal-actions button {
+    margin: 0 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.modal-actions button.select-face-btn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.modal-actions button.select-face-btn:hover {
+    background-color: #2563eb;
+}
+
+.modal-actions button.cancel-btn {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.modal-actions button.cancel-btn:hover {
+    background-color: #d1d5db;
+}
+
+/* Adjustment Handle Styling */
+.adjustment-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 0, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    cursor: grab;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.adjustment-handle[data-type^="t"],
+.adjustment-handle[data-type^="b"],
+.adjustment-handle[data-type^="m"] {
+    border-radius: 0;
+}
+
+#overlayCanvas.manual-grid-adjusting .adjustment-handle {
+    pointer-events: auto;
+}
+
+/* Confirm Button Styling */
+#confirmGridButton {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Colorful Upload Card Styling - Purple to Pink */
+#uploadCard {
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    /* Purple to Pink */
+    border: none;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#uploadCard:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+#uploadCard h2 {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#uploadCard p {
+    color: #f3e8ff;
+    /* Lighter purple/pink text */
+}
+
+#uploadCard .dashed-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+#uploadCard:hover .dashed-zone {
+    border-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#uploadCard .dashed-zone .material-symbols-outlined {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+    font-size: 40px;
+}
+
+#uploadCard:hover .dashed-zone .material-symbols-outlined {
+    color: white;
+}
+
+#uploadCard .dashed-zone .upload-text-primary {
+    color: white;
+    font-weight: 500;
+}
+
+#uploadCard .dashed-zone .upload-text-secondary {
+    color: #fce7f3;
+    /* Lighter pink text */
+}
+
+/* External New Upload Button Styling */
+#newUploadButtonExt {
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid transparent;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: white;
+    background-color: #4f46e5;
+    transition: background-color 0.15s ease-in-out;
+    margin-bottom: 1.5rem;
+    width: auto;
+}
+
+#newUploadButtonExt:not(.hidden) {
+    display: inline-flex;
+}
+
+#newUploadButtonExt:hover {
+    background-color: #4338ca;
+}
+
+#newUploadButtonExt:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
+}
+
+#newUploadButtonExt .material-symbols-outlined {
+    margin-right: 0.5rem;
+    font-size: 20px;
+    vertical-align: middle;
+    color: white;
+    cursor: pointer;
+}
+
+/* Privacy/Terms Policy Card Styling */
+.policy-card {
+    max-width: 480px;
+    /* Match width of other cards */
+    width: 100%;
+    margin-top: 0.75rem;
+    /* Space between policy cards */
+    background-color: #f9fafb;
+    /* Slightly off-white */
+    border: 1px solid #e5e7eb;
+    /* Soft border */
+}
