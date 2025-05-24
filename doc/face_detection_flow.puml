@@ -1,0 +1,88 @@
+@startuml Face Detection Flow
+!theme materia
+
+title Face Detection and Grid Display Flow
+
+start
+
+partition "User Action" {
+  :Clicks 'Face Landmarks' icon (`iconFace`);
+}
+
+partition "Event Handling (`eventHandlers.js` - `handleFaceIconClick`)" {
+  :Toggle `state.showFaceLandmarks`;
+  if (`state.showFaceLandmarks` is false?) then (Hide Landmarks)
+    :Add comment "Hiding face landmarks";
+    :Call `uiManager.hideFaceSelectionModal()` (if open);
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+    stop
+  else (Show Landmarks)
+    :Add comment "Showing face landmarks...";
+    if (`state.lastFaceDetections` exists?) then (Detections already present)
+      if (`state.lastFaceDetections.faceLandmarks.length > 1` AND `state.selectedReferenceFaceIndex` is null?) then (Multiple faces, none selected)
+        :Add comment "Select face for grid";
+        :Call `uiManager.showFaceSelectionModal(numFaces)`;
+        ' Flow continues via modal interaction
+        stop
+      else (Single face or one already selected)
+        :Call `canvasManager.redrawCanvas()` (to draw landmarks/grid);
+        :Call `uiManager.updateIconStates()`;
+        stop
+      endif
+    else (No previous detections)
+      :Call `mediaPipeManager.detectFaces()`;
+    endif
+  endif
+}
+
+partition "Detection Logic (`mediaPipeManager.js` - `detectFaces`)" {
+  :Add comment "Running face detection...";
+  :Call `state.faceLandmarker.detect(state.currentImageElement)`;
+  if (Error during detection?) then (yes)
+    :Add error comment;
+    :Set `state.lastFaceDetections = null`;
+    :Set `state.showFaceLandmarks = false`;
+    :Call `uiManager.updateIconStates()`;
+    stop
+  else (Detection successful)
+    :Set `state.lastFaceDetections = results`;
+    :Get `numFaces = results.faceLandmarks.length`;
+    if (`numFaces > 0`?) then (yes)
+      :Add comment "Found X face(s)";
+      if (`numFaces > 1`?) then (Multiple faces)
+        :Set `state.selectedReferenceFaceIndex = null`;
+        :Add comment "Select face for grid";
+        :Call `uiManager.showFaceSelectionModal(numFaces)`;
+        ' Modal interaction will handle next steps
+        stop
+      else (Single face)
+        :Set `state.selectedReferenceFaceIndex = 0`;
+        :Call `canvasManager.redrawCanvas()` (to draw landmarks for the single face and its grid);
+        :Call `uiManager.updateIconStates()`;
+        stop
+      endif
+    else (No faces found)
+      :Add comment "No faces detected";
+      :Set `state.lastFaceDetections = null`;
+      :Set `state.showFaceLandmarks = false`;
+      :Call `canvasManager.redrawCanvas()`;
+      :Call `uiManager.updateIconStates()`;
+      stop
+    endif
+  endif
+}
+
+'This part of the flow is triggered by user clicking a button in the modal
+partition "Modal Event (`eventHandlers.js` - `handleFaceSelection`)" {
+    note left: This path taken only if modal was shown
+    :User clicks a face button in the modal;
+    :Set `state.selectedReferenceFaceIndex` from button's data;
+    :Add comment "Selected Face X for grid";
+    :Call `uiManager.hideFaceSelectionModal()`;
+    :Call `canvasManager.redrawCanvas()` (draws selected face grid);
+    :Call `uiManager.updateIconStates()`;
+}
+stop
+
+@enduml

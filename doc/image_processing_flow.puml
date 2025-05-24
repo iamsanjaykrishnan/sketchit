@@ -1,0 +1,68 @@
+@startuml Image Processing Flow
+!theme materia
+
+title Image Processing and Initial Display Flow
+
+start
+
+partition "User Action" {
+  :User selects image via file input OR drags and drops image file/URL;
+}
+
+partition "Event Handling (`eventHandlers.js`)" {
+  if (File input?) then (yes)
+    :Input 'change' event triggers `handleFileInputChange`;
+  else (Drag and Drop)
+    :Body 'drop' event triggers `handleBodyDrop`;
+  endif
+  :Call `uiManager.resetCommonState()` to clear previous state;
+}
+
+partition "Image Loading (`main.js`)" {
+  if (File object provided?) then (yes)
+    :Call `processImageFile(file)`;
+    :Use FileReader to read as Data URL;
+    if (Reader error?) then (yes)
+      :Call `uiManager.resetFullPreview()`;
+      :Display error message;
+      stop
+    endif
+  else (URL provided from drop)
+    :Call `processImageUrl(url)`;
+    if (URL is invalid/empty?) then (yes)
+      :Call `uiManager.resetFullPreview()`;
+      :Display error message;
+      stop
+    endif
+  endif
+
+  :Set `imagePreview.crossOrigin = "Anonymous"`;
+  :Set `imagePreview.src = imageDataOrUrl`;
+
+  if (Image load error (`imagePreview.onerror`)?) then (yes)
+    :Call `uiManager.resetFullPreview()`;
+    :Display error message;
+    stop
+  else (Image loaded successfully (`imagePreview.onload`))
+    :Set `state.currentImageElement = imagePreview`;
+    :Update UI: hide upload card, show preview container & new upload button;
+    :Call `canvasManager.resizeCanvasToImage()` to fit canvas to image;
+    :Add success comment to UI;
+    if (URL loaded?) then (yes)
+        :Perform CORS check (draw to temp canvas);
+        if (SecurityError?) then (yes)
+            :Add warning about potential MediaPipe issues;
+        endif
+    endif
+    :Call `uiManager.updateIconStates()` to enable/disable relevant icons;
+  endif
+}
+
+partition "Application Ready" {
+  :Image is displayed, canvas is sized;
+  :Application is ready for MediaPipe detection (face/pose) or manual grid operations;
+}
+
+stop
+
+@enduml
