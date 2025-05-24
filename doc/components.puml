@@ -1,0 +1,90 @@
+@startuml Sketchit Component Diagram
+
+!theme materia
+
+package "User Interface (HTML/CSS)" {
+  [index.html]
+  [style.css]
+}
+
+package "JavaScript Modules" {
+  component [main.js] <<Entry Point>>
+  component [domElements.js] <<DOM Access>>
+  component [config.js] <<Configuration>>
+  component [state.js] <<State Management>>
+  component [utils.js] <<Utilities>>
+  component [eventHandlers.js] <<Events>>
+  component [uiManager.js] <<UI Logic>>
+  component [canvasManager.js] <<Canvas Logic>>
+  component [mediaPipeManager.js] <<MediaPipe Facade>>
+}
+
+package "External Libraries" {
+  component [MediaPipe Tasks Vision] <<Library>>
+  [Tailwind CSS] <<Framework>>
+}
+
+' Relationships
+[main.js] --> [domElements.js]
+[main.js] --> [state.js]
+[main.js] --> [config.js]
+[main.js] --> [utils.js]
+[main.js] --> [mediaPipeManager.js]
+[main.js] --> [uiManager.js]
+[main.js] --> [canvasManager.js]
+[main.js] --> [eventHandlers.js] : Registers Handlers
+
+[eventHandlers.js] --> [domElements.js]
+[eventHandlers.js] --> [state.js]
+[eventHandlers.js] --> [config.js]
+[eventHandlers.js] --> [utils.js]
+[eventHandlers.js] --> [mediaPipeManager.js]
+[eventHandlers.js] --> [uiManager.js]
+[eventHandlers.js] --> [canvasManager.js]
+[eventHandlers.js] --> [main.js] : (e.g. processImageFile)
+
+[uiManager.js] --> [domElements.js]
+[uiManager.js] --> [state.js]
+[uiManager.js] --> [canvasManager.js]
+[uiManager.js] --> [utils.js]
+[uiManager.js] --> [eventHandlers.js] : (Attaches to dynamic elements)
+
+[canvasManager.js] --> [domElements.js]
+[canvasManager.js] --> [state.js]
+[canvasManager.js] --> [config.js]
+[canvasManager.js] --> [utils.js]
+[canvasManager.js] --> [uiManager.js]
+[canvasManager.js] ..> [MediaPipe Tasks Vision] : (Uses Enums like FaceLandmarker.FACE_LANDMARKS_*)
+
+[mediaPipeManager.js] --> [config.js]
+[mediaPipeManager.js] --> [state.js]
+[mediaPipeManager.js] --> [utils.js]
+[mediaPipeManager.js] --> [uiManager.js] : (Updates icons, shows modal)
+[mediaPipeManager.js] --> [domElements.js] : (Accesses canvas for scaling)
+[mediaPipeManager.js] --> [MediaPipe Tasks Vision] : (Core Interaction)
+
+[utils.js] --> [domElements.js]
+[utils.js] --> [state.js]
+[utils.js] --> [config.js]
+
+[index.html] ..> [style.css]
+[index.html] ..> [main.js]
+[index.html] ..> [Tailwind CSS]
+
+note right of [config.js]
+  Stores constants for DB,
+  model URLs, UI parameters.
+end note
+
+note right of [state.js]
+  Centralized store for all
+  dynamic application data.
+end note
+
+note right of [mediaPipeManager.js]
+  Initializes and runs
+  MediaPipe models for face
+  and pose detection.
+end note
+
+@enduml
