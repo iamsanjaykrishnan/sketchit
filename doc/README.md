@@ -22,5 +22,7 @@ This folder contains documentation for the Sketchit web application.
     *   To view this diagram, you can use a PlantUML renderer (e.g., online viewers like PlantText, or local tools).
 *   **`image_processing_flow.puml`**: An activity diagram illustrating the flow from user image input to display and readiness for processing.
 *   **`manual_grid_flow.puml`**: An activity diagram showing the user and system interactions for drawing, adjusting, and confirming a manual grid.
+*   **`face_detection_flow.puml`**: An activity diagram detailing the face detection process, including selection from multiple detected faces.
+*   **`pose_detection_flow.puml`**: An activity diagram covering pose detection and the subsequent interaction for dragging pose landmarks.
 
 *(More diagrams may be added here as they are created.)*

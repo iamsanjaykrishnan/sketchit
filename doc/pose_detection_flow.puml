@@ -1,0 +1,113 @@
+@startuml Pose Detection and Dragging Flow
+!theme materia
+
+title Pose Detection and Landmark Dragging Flow
+
+start
+
+partition "User Action" {
+  :Clicks 'Pose Landmarks' icon (`iconPose`);
+}
+
+partition "Event Handling (`eventHandlers.js` - `handlePoseIconClick`)" {
+  :Toggle `state.showPoseLandmarks`;
+  if (`state.showPoseLandmarks` is false?) then (Hide Landmarks)
+    :Add comment "Hiding pose landmarks";
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+    stop
+  else (Show Landmarks)
+    :Add comment "Showing pose landmarks...";
+    if (`state.lastPoseDetections` exists AND `state.draggablePoseLandmarks` is NOT empty?) then (Detections/Draggables already present)
+      :Call `canvasManager.redrawCanvas()` (to draw landmarks);
+      :Call `uiManager.updateIconStates()`;
+      stop
+    else if (`state.lastPoseDetections` exists AND `state.draggablePoseLandmarks` IS empty) then (Restore from last detection)
+      :Add comment "Restoring previous pose data...";
+      :Convert `state.lastPoseDetections.landmarks` to pixel coordinates;
+      :Set `state.draggablePoseLandmarks` with converted data;
+      :Call `canvasManager.redrawCanvas()`;
+      :Call `uiManager.updateIconStates()`;
+      stop
+    else (No previous detections or draggables)
+      :Call `mediaPipeManager.detectPoses()`;
+    endif
+  endif
+}
+
+partition "Detection Logic (`mediaPipeManager.js` - `detectPoses`)" {
+  :Add comment "Running pose detection...";
+  :Call `state.poseLandmarker.detect(state.currentImageElement)`;
+  if (Error during detection?) then (yes)
+    :Add error comment;
+    :Set `state.draggablePoseLandmarks = []`;
+    :Set `state.showPoseLandmarks = false`;
+    :Call `uiManager.updateIconStates()`;
+    stop
+  else (Detection successful)
+    :Set `state.lastPoseDetections = results`;
+    if (`results.landmarks.length > 0`?) then (Poses found)
+      :Add comment "Found X pose(s)";
+      :Convert normalized `results.landmarks` to pixel coordinates (scaled to canvas);
+      :Set `state.draggablePoseLandmarks` with these pixel coordinates;
+    else (No poses found)
+      :Add comment "No poses detected";
+      :Set `state.draggablePoseLandmarks = []`;
+      :Set `state.showPoseLandmarks = false`;
+    endif
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+    if (`results.landmarks.length == 0`?) then (stop if no poses)
+        stop
+    endif
+  endif
+}
+
+' Interaction for dragging pose points
+partition "User Action (Canvas)" {
+  :Presses mouse button on a pose landmark point on canvas;
+}
+
+partition "Canvas Event (`eventHandlers.js` - `handleCanvasMouseDown`)" {
+  :Identify which pose and point index is clicked (check against `state.draggablePoseLandmarks` within `config.HIT_RADIUS`);
+  if (Point identified?) then (yes)
+    :Set `state.isDraggingPosePoint = true`;
+    :Set `state.draggedPointInfo = {poseIndex, pointIndex}`;
+    :Calculate and store `state.dragOffsetX/Y` (mouse pos relative to point's origin);
+    :Call `canvasManager.redrawCanvas()` (might highlight point);
+    :Call `uiManager.updateIconStates()` (e.g., cursor change);
+  endif
+}
+
+partition "User Action (Canvas)" {
+  :Drags mouse on canvas (while point is selected);
+}
+
+partition "Canvas Event (`eventHandlers.js` - `handleCanvasMouseMove`)" {
+  if (`state.isDraggingPosePoint` is true?) then (yes)
+    :Get current mouse position;
+    :Update `state.draggablePoseLandmarks[poseIndex][pointIndex].x/y` based on mouse position and `dragOffsetX/Y`, clamping to canvas bounds;
+    :Call `requestAnimationFrame(canvasManager.redrawCanvas)` for smooth update;
+  else (no, just hovering)
+    :Check for hover over any pose point;
+    :Set `state.isHoveringPosePoint` accordingly;
+    :Call `uiManager.updateIconStates()` (for cursor hover effects);
+  endif
+}
+
+partition "User Action (Canvas)" {
+  :Releases mouse button;
+}
+
+partition "Canvas Event (`eventHandlers.js` - `handleCanvasMouseUp`)" {
+  if (`state.isDraggingPosePoint` is true?) then (yes)
+    :Set `state.isDraggingPosePoint = false`;
+    :Clear `state.draggedPointInfo`;
+    :Clear `state.dragOffsetX/Y`;
+    :Call `canvasManager.redrawCanvas()`;
+    :Call `uiManager.updateIconStates()`;
+  endif
+}
+
+stop
+@enduml
