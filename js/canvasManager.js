@@ -10,15 +10,16 @@ export function resizeCanvasToImage() {
     if (!state.currentImageElement || !dom.overlayCanvas || !dom.imagePreviewContainer ||
         !state.currentImageElement.naturalWidth || !state.currentImageElement.naturalHeight) {
         console.warn("Resize skipped: Missing elements or zero natural dimensions.");
+        if (state.showPencilSketch && dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied;
+        state.setIsPencilSketchApplied(false);
         return;
     }
 
     const oldCanvasDrawingWidth = dom.overlayCanvas.width;
-    const oldCanvasDrawingHeight = dom.overlayCanvas.height;
 
     const img = state.currentImageElement;
     const canvas = dom.overlayCanvas;
-    const container = img.parentElement; // Should be .image-display-container
+    const container = img.parentElement;
 
     const cW = container.offsetWidth;
     const cH = container.offsetHeight;
@@ -27,27 +28,30 @@ export function resizeCanvasToImage() {
 
     if (cW <= 0 || cH <= 0 || imgW <= 0 || imgH <= 0) {
         console.warn(`Resize skipped: Invalid dimensions - Container: ${cW}x${cH}, Image: ${imgW}x${imgH}`);
+        if (state.showPencilSketch && dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied;
+        state.setIsPencilSketchApplied(false);
         return;
     }
 
     let finalScale = Math.min(cW / imgW, cH / imgH);
     img.style.width = `${imgW * finalScale}px`;
     img.style.height = `${imgH * finalScale}px`;
-    // img.style.objectFit = 'contain'; // Already set in CSS, but good to be explicit if needed
 
-    const rW = imgW * finalScale; // Rendered width of the image
-    const rH = imgH * finalScale; // Rendered height of the image
-
-    const oX = (cW - rW) / 2; // Offset to center the image in its container
+    const rW = imgW * finalScale;
+    const rH = imgH * finalScale;
+    const oX = (cW - rW) / 2;
     const oY = (cH - rH) / 2;
 
     if (isNaN(rW) || isNaN(rH) || isNaN(oX) || isNaN(oY)) {
         console.error("Resize Error: Calculated NaN values.", { rW, rH, oX, oY, finalScale });
+        if (state.showPencilSketch && dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied;
+        state.setIsPencilSketchApplied(false);
         return;
     }
 
     const newCanvasDrawingWidth = Math.max(0, rW);
     const newCanvasDrawingHeight = Math.max(0, rH);
+    const canvasResized = canvas.width !== newCanvasDrawingWidth || canvas.height !== newCanvasDrawingHeight;
 
     canvas.width = newCanvasDrawingWidth;
     canvas.height = newCanvasDrawingHeight;
@@ -62,35 +66,23 @@ export function resizeCanvasToImage() {
         dom.adjustmentHandlesContainer.style.width = `${newCanvasDrawingWidth}px`;
         dom.adjustmentHandlesContainer.style.height = `${newCanvasDrawingHeight}px`;
     }
-
-    // Scale existing draggable pose landmarks
-    if (oldCanvasDrawingWidth > 0 && newCanvasDrawingWidth > 0 && state.draggablePoseLandmarks.length > 0) {
-        const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
-        if (Math.abs(scaleFactor - 1.0) > 0.0001) {
-            state.draggablePoseLandmarks.forEach(singlePoseLandmarks => {
-                singlePoseLandmarks.forEach(landmark => {
-                    landmark.x *= scaleFactor;
-                    landmark.y *= scaleFactor;
-                });
-            });
-        }
-    } else if (state.lastPoseDetections?.landmarks?.length > 0 && newCanvasDrawingWidth > 0 && newCanvasDrawingHeight > 0 && state.draggablePoseLandmarks.length === 0) {
-        // Initialize from lastPoseDetections if draggable landmarks are empty (e.g., after initial load + resize)
-         const newDraggableLandmarks = state.lastPoseDetections.landmarks.map(singlePoseLms =>
-            singlePoseLms.map(lm => ({
-                x: lm.x * newCanvasDrawingWidth,
-                y: lm.y * newCanvasDrawingHeight,
-                visibility: lm.visibility
-            }))
-        );
-        state.setDraggablePoseLandmarks(newDraggableLandmarks);
+    
+    if (canvasResized) {
+        if (state.showPencilSketch && dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied;
+        state.setIsPencilSketchApplied(false);
     }
 
-
-    // Scale manual grid
     if (oldCanvasDrawingWidth > 0 && newCanvasDrawingWidth > 0) {
         const scaleFactor = newCanvasDrawingWidth / oldCanvasDrawingWidth;
         if (Math.abs(scaleFactor - 1.0) > 0.0001) {
+            if (state.draggablePoseLandmarks.length > 0) {
+                state.draggablePoseLandmarks.forEach(singlePoseLandmarks => {
+                    singlePoseLandmarks.forEach(landmark => {
+                        landmark.x *= scaleFactor;
+                        landmark.y *= scaleFactor;
+                    });
+                });
+            }
             if (state.manualGridRect && state.manualGridRect.size > 0) {
                 state.manualGridRect.x *= scaleFactor;
                 state.manualGridRect.y *= scaleFactor;
@@ -109,18 +101,165 @@ export function resizeCanvasToImage() {
                 state.setManualGridCurrentY(state.manualGridCurrentY * scaleFactor);
             }
         }
+    } else if (state.lastPoseDetections?.landmarks?.length > 0 && newCanvasDrawingWidth > 0 && newCanvasDrawingHeight > 0 && state.draggablePoseLandmarks.length === 0) {
+        const newDraggableLandmarks = state.lastPoseDetections.landmarks.map(singlePoseLms =>
+            singlePoseLms.map(lm => ({
+                x: lm.x * newCanvasDrawingWidth,
+                y: lm.y * newCanvasDrawingHeight,
+                visibility: lm.visibility
+            }))
+        );
+        state.setDraggablePoseLandmarks(newDraggableLandmarks);
     }
     redrawCanvas();
 }
 
-export function redrawCanvas() {
-    utils.clearCanvas();
-    if (!dom.canvasCtx) return;
+function getGrayscaleImageData(originalImageData) {
+    const grayscaleData = new Uint8ClampedArray(originalImageData.data.length);
+    const originalPixels = originalImageData.data;
+    for (let i = 0; i < originalPixels.length; i += 4) {
+        const r = originalPixels[i];
+        const g = originalPixels[i + 1];
+        const b = originalPixels[i + 2];
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        grayscaleData[i] = gray;
+        grayscaleData[i + 1] = gray;
+        grayscaleData[i + 2] = gray;
+        grayscaleData[i + 3] = originalPixels[i + 3]; // Alpha
+    }
+    return new ImageData(grayscaleData, originalImageData.width, originalImageData.height);
+}
 
-    if (state.showFaceLandmarks && state.lastFaceDetections && !state.isManualGridModeActive && !state.isDrawingManualGrid && !state.isAdjustingManualGrid) {
+function getInvertedImageData(originalImageData) {
+    const invertedData = new Uint8ClampedArray(originalImageData.data.length);
+    const originalPixels = originalImageData.data;
+    for (let i = 0; i < originalPixels.length; i += 4) {
+        invertedData[i] = 255 - originalPixels[i];     // R
+        invertedData[i + 1] = 255 - originalPixels[i + 1]; // G
+        invertedData[i + 2] = 255 - originalPixels[i + 2]; // B
+        invertedData[i + 3] = originalPixels[i + 3];     // Alpha
+    }
+    return new ImageData(invertedData, originalImageData.width, originalImageData.height);
+}
+
+function getBlurredImageData(imageDataToBlur, blurAmount = 2, tempBlurCanvas) {
+    // Uses a temporary canvas to apply filter blur
+    tempBlurCanvas.width = imageDataToBlur.width;
+    tempBlurCanvas.height = imageDataToBlur.height;
+    const blurCtx = tempBlurCanvas.getContext('2d');
+    
+    blurCtx.putImageData(imageDataToBlur, 0, 0);
+    blurCtx.filter = `blur(${blurAmount}px)`;
+    blurCtx.drawImage(tempBlurCanvas, 0, 0); // Draw onto itself to apply filter
+    
+    // To ensure filter is applied before getImageData, we draw again without filter
+    blurCtx.filter = 'none'; 
+    blurCtx.drawImage(tempBlurCanvas, 0,0);
+
+    return blurCtx.getImageData(0, 0, tempBlurCanvas.width, tempBlurCanvas.height);
+}
+
+function colorDodgeBlend(baseImageData, blendImageData) {
+    const outputData = new Uint8ClampedArray(baseImageData.data.length);
+    const basePixels = baseImageData.data;
+    const blendPixels = blendImageData.data;
+
+    for (let i = 0; i < basePixels.length; i += 4) {
+        for (let j = 0; j < 3; j++) { // R, G, B channels
+            const base = basePixels[i + j];
+            const blend = blendPixels[i + j];
+            if (blend === 255) {
+                outputData[i + j] = 255;
+            } else {
+                outputData[i + j] = Math.min(255, base / (1 - blend / 255));
+            }
+        }
+        outputData[i + 3] = basePixels[i + 3]; // Alpha
+    }
+    return new ImageData(outputData, baseImageData.width, baseImageData.height);
+}
+
+// Store temp canvas globally within the module to reuse
+let _tempSketchCanvas = null;
+let _tempBlurCanvas = null;
+
+
+function applyPencilSketchFilter(originalImageData) {
+    if (!_tempSketchCanvas) _tempSketchCanvas = document.createElement('canvas');
+    if (!_tempBlurCanvas) _tempBlurCanvas = document.createElement('canvas');
+
+    // 1. Grayscale
+    const grayscaleImgData = getGrayscaleImageData(originalImageData);
+
+    // 2. Invert
+    const invertedImgData = getInvertedImageData(grayscaleImgData);
+    
+    // 3. Blur inverted image
+    // A larger blur can make it look more "smudged"
+    const blurredInvertedImgData = getBlurredImageData(invertedImgData, 2, _tempBlurCanvas);
+
+    // 4. Blend (Color Dodge) grayscale with blurred-inverted
+    const finalSketchImageData = colorDodgeBlend(grayscaleImgData, blurredInvertedImgData);
+    
+    return finalSketchImageData;
+}
+
+
+export function redrawCanvas() {
+    utils.clearCanvas(); // Clears the main overlayCanvas
+    if (!dom.canvasCtx || !state.currentImageElement || dom.overlayCanvas.width === 0 || dom.overlayCanvas.height === 0) {
+        uiManager.updateIconStates();
+        return;
+    }
+
+    // Use the module-level temporary canvas for drawing the base image (original or sketched)
+    if (!_tempSketchCanvas) _tempSketchCanvas = document.createElement('canvas');
+    _tempSketchCanvas.width = dom.overlayCanvas.width;
+    _tempSketchCanvas.height = dom.overlayCanvas.height;
+    const tempCtx = _tempSketchCanvas.getContext('2d');
+
+    // Draw the original image onto the temporary canvas first
+    tempCtx.drawImage(state.currentImageElement, 0, 0, _tempSketchCanvas.width, _tempSketchCanvas.height);
+
+    if (state.showPencilSketch) {
+        if (!dom.overlayCanvas.dataset.sketchApplied || dom.overlayCanvas.dataset.sketchApplied !== "true") {
+            try {
+                let originalImageData = tempCtx.getImageData(0, 0, _tempSketchCanvas.width, _tempSketchCanvas.height);
+                const sketchImageData = applyPencilSketchFilter(originalImageData);
+                tempCtx.putImageData(sketchImageData, 0, 0);
+
+                dom.overlayCanvas.dataset.sketchApplied = "true";
+                state.setIsPencilSketchApplied(true);
+            } catch (e) {
+                console.error("Error applying pencil sketch filter:", e);
+                utils.addComment("Could not apply pencil sketch. Displaying original.", "error");
+                // tempCtx already has the original image if sketch fails
+                state.setShowPencilSketch(false);
+                state.setIsPencilSketchApplied(false);
+                delete dom.overlayCanvas.dataset.sketchApplied;
+            }
+        } else if (state.isPencilSketchApplied) {
+            // If already applied, re-apply from original to temp canvas to ensure it's there
+            let originalImageData = tempCtx.getImageData(0, 0, _tempSketchCanvas.width, _tempSketchCanvas.height); // This will be original if we re-drew it.
+            const sketchImageData = applyPencilSketchFilter(originalImageData); // Re-run the filter steps
+            tempCtx.putImageData(sketchImageData, 0, 0);
+        }
+    } else {
+        state.setIsPencilSketchApplied(false);
+        delete dom.overlayCanvas.dataset.sketchApplied;
+        // Original image is already on tempCtx
+    }
+
+    // Draw the content of the temporary canvas (original or sketched) to the main overlayCanvas
+    dom.canvasCtx.drawImage(_tempSketchCanvas, 0, 0);
+
+    // --- Overlay other elements on top ---
+    const definingManualGrid = state.isManualGridModeActive || state.isDrawingManualGrid || state.isAdjustingManualGrid;
+
+    if (state.showFaceLandmarks && state.lastFaceDetections && !definingManualGrid) {
         drawFaceLandmarksInternal(state.lastFaceDetections, state.selectedReferenceFaceIndex);
     }
-    if (state.showPoseLandmarks && state.draggablePoseLandmarks.length > 0 && !state.isManualGridModeActive && !state.isDrawingManualGrid && !state.isAdjustingManualGrid) {
+    if (state.showPoseLandmarks && state.draggablePoseLandmarks.length > 0 && !definingManualGrid) {
         drawPoseLandmarksInternal();
     }
 
@@ -131,7 +270,7 @@ export function redrawCanvas() {
     } else if (state.showFinalManualGrid && state.finalManualGridRect) {
         drawGridFromRect(state.finalManualGridRect);
     }
-    uiManager.updateIconStates(); // Update icons which might depend on canvas state (like cursors)
+    uiManager.updateIconStates();
 }
 
 function drawFaceLandmarksInternal(results, gridFaceIndex = null) {
@@ -140,7 +279,7 @@ function drawFaceLandmarksInternal(results, gridFaceIndex = null) {
     results.faceLandmarks.forEach((landmarks, index) => {
         const isSelected = index === gridFaceIndex;
         const eyeColor = isSelected ? "#FF3030" : "#FFA0A0";
-        const lipColor = isSelected ? "#E0E0E0" : "#B0B0B0"; // Lighter for selected
+        const lipColor = isSelected ? "#E0E0E0" : "#B0B0B0";
         const ovalColor = isSelected ? "#E0E0E0" : "#B0B0B0";
 
         if (landmarks?.length > 0) {
@@ -157,7 +296,6 @@ function drawFaceLandmarksInternal(results, gridFaceIndex = null) {
             if (isSelected) utils.addComment(`No landmarks available for selected Face ${index + 1}.`, 'info');
             return;
         }
-
 
         if (isSelected) {
             const pixelLandmarks = landmarks.map(p => ({
@@ -202,7 +340,6 @@ function drawPoseLandmarksInternal() {
         connections.forEach((c) => {
             const startIdx = c.start;
             const endIdx = c.end;
-            // Skip face landmarks (indices 0-10 are typically face for BlazePose)
             if (startIdx <= 10 || endIdx <= 10) return;
 
             if (startIdx < singlePoseLandmarks.length && endIdx < singlePoseLandmarks.length) {
@@ -220,7 +357,7 @@ function drawPoseLandmarksInternal() {
 
         dom.canvasCtx.fillStyle = pointColor;
         singlePoseLandmarks.forEach((p, landmarkDrawingIdx) => {
-            if (landmarkDrawingIdx <= 10) return; // Skip drawing face points themselves
+            if (landmarkDrawingIdx <= 10) return;
             if (p && typeof p.x === 'number' && typeof p.y === 'number') {
                 dom.canvasCtx.beginPath();
                 dom.canvasCtx.arc(p.x, p.y, config.POINT_RADIUS, 0, 2 * Math.PI);
@@ -229,9 +366,9 @@ function drawPoseLandmarksInternal() {
                 if (state.isDraggingPosePoint && state.draggedPointInfo &&
                     state.draggedPointInfo.poseIndex === poseDrawingIdx &&
                     state.draggedPointInfo.pointIndex === landmarkDrawingIdx) {
-                    dom.canvasCtx.strokeStyle = '#0000FF'; // Highlight color for dragged point
+                    dom.canvasCtx.strokeStyle = '#0000FF';
                     dom.canvasCtx.lineWidth = 2;
-                    dom.canvasCtx.stroke(); // Draw the highlight circle
+                    dom.canvasCtx.stroke();
                 }
             }
         });
@@ -266,7 +403,6 @@ export function calculateAndUpdateHandlePositions() {
     const newHandles = [];
     if (!state.manualGridRect || !state.isAdjustingManualGrid) {
         state.setAdjustmentHandles(newHandles);
-        uiManager.updateAdjustmentHandles(); // Will clear visual handles
         return;
     }
 
@@ -283,7 +419,7 @@ export function calculateAndUpdateHandlePositions() {
     newHandles.push({ type: 'mr', x: x + size, y: y + halfSize });
 
     state.setAdjustmentHandles(newHandles);
-    uiManager.updateAdjustmentHandles(); // Update visual handles
+    uiManager.updateAdjustmentHandles();
 }
 
 
@@ -297,32 +433,24 @@ export function drawGridFromRect(gridRect) {
 
     dom.canvasCtx.lineWidth = 1;
 
-    // Vertical Lines (Cyan)
     dom.canvasCtx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
     for (let currentX = startX; currentX < canvasWidth + size; currentX += size) { if (currentX >= -size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(currentX, 0); dom.canvasCtx.lineTo(currentX, canvasHeight); dom.canvasCtx.stroke(); } if (size === 0) break; }
     for (let currentX = startX - size; currentX > -size; currentX -= size) { if (currentX < canvasWidth + size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(currentX, 0); dom.canvasCtx.lineTo(currentX, canvasHeight); dom.canvasCtx.stroke(); } if (size === 0) break; }
 
-
-    // Horizontal Lines (Yellow)
     dom.canvasCtx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
     for (let currentY = startY; currentY < canvasHeight + size; currentY += size) { if (currentY >= -size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(0, currentY); dom.canvasCtx.lineTo(canvasWidth, currentY); dom.canvasCtx.stroke(); } if (size === 0) break; }
     for (let currentY = startY - size; currentY > -size; currentY -= size) { if (currentY < canvasHeight + size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(0, currentY); dom.canvasCtx.lineTo(canvasWidth, currentY); dom.canvasCtx.stroke(); } if (size === 0) break; }
 
-
-    // Inner Thirds Lines
     if (size > 0) {
         const thirdSize = size / 3;
-        // Vertical thirds (Green)
         dom.canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
         dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(startX + thirdSize, startY); dom.canvasCtx.lineTo(startX + thirdSize, endY); dom.canvasCtx.stroke();
         dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(startX + 2 * thirdSize, startY); dom.canvasCtx.lineTo(startX + 2 * thirdSize, endY); dom.canvasCtx.stroke();
-        // Horizontal thirds (Red)
         dom.canvasCtx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
         dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(startX, startY + thirdSize); dom.canvasCtx.lineTo(endX, startY + thirdSize); dom.canvasCtx.stroke();
         dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(startX, startY + 2 * thirdSize); dom.canvasCtx.lineTo(endX, startY + 2 * thirdSize); dom.canvasCtx.stroke();
     }
 
-    // Defining square outline (Magenta)
     dom.canvasCtx.strokeStyle = 'rgba(255, 0, 255, 0.9)';
     dom.canvasCtx.lineWidth = 2;
     dom.canvasCtx.strokeRect(startX, startY, size, size);

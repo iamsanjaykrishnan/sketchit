@@ -124,7 +124,7 @@ function setupEventListeners() {
     if (dom.cancelModalButton) dom.cancelModalButton.addEventListener('click', eventHandlers.handleModalCancelButtonClick);
     if (dom.faceSelectionModal) dom.faceSelectionModal.addEventListener('click', eventHandlers.handleModalOverlayClick);
     if (dom.newUploadButtonExt) dom.newUploadButtonExt.addEventListener('click', eventHandlers.handleNewUploadButtonClick);
-
+    if (dom.iconPencilSketch) dom.iconPencilSketch.addEventListener('click', eventHandlers.handlePencilSketchIconClick);
 
     // Canvas Listeners
     if (dom.overlayCanvas) {

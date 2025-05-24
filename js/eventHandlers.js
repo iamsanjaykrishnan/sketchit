@@ -398,3 +398,19 @@ export function handleModalCancelButtonClick() {
 }
 
 export function handleModalOverlayClick(event) { if (event.target === _dom.faceSelectionModal) { handleModalCancelButtonClick(); } }
+
+
+export function handlePencilSketchIconClick() {
+    if (!_dom.iconPencilSketch || !_dom.iconPencilSketch || _dom.iconPencilSketch.classList.contains('disabled')) return;
+
+    state.setShowPencilSketch(!state.showPencilSketch);
+
+    if (state.showPencilSketch) {
+        utils.addComment('Applying pencil sketch effect...', 'info');
+        // The actual application of the effect will happen in canvasManager.redrawCanvas
+    } else {
+        utils.addComment('Removing pencil sketch effect.', 'info');
+    }
+    canvasManager.redrawCanvas(); // Request a redraw
+    uiManager.updateIconStates();
+}

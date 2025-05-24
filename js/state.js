@@ -35,6 +35,9 @@ export let isDraggingGridSquare = false; // For dragging the entire manual grid 
 export let gridDragStartX = 0; // Initial X of grid when square drag starts
 export let gridDragStartY = 0; // Initial Y of grid when square drag starts
 
+// Pencil Sketch State
+export let showPencilSketch = false;
+export let isPencilSketchApplied = false; 
 
 // Hover State
 export let isHoveringPosePoint = false;
@@ -88,3 +91,5 @@ export function setShowPoseLandmarks(value) { showPoseLandmarks = value; }
 export function setIsCommentAreaInitialized(value) { isCommentAreaInitialized = value; }
 export function setSelectedReferenceFaceIndex(index) { selectedReferenceFaceIndex = index; }
 export function setLandmarkDB(db) { landmarkDB = db; }
+export function setShowPencilSketch(value) { showPencilSketch = value; }
+export function setIsPencilSketchApplied(value) { isPencilSketchApplied = value; }

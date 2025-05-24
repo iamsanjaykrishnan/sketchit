@@ -38,7 +38,7 @@ export function resetPreviewVisuals() {
 
 
 export function updateIconStates() {
-    if (!dom.iconFace || !dom.iconPose || !dom.iconGrid || !dom.overlayCanvas || !dom.confirmGridButton) return;
+    if (!dom.iconFace || !dom.iconPose || !dom.iconGrid || !dom.iconPencilSketch || !dom.overlayCanvas || !dom.confirmGridButton) return;
 
     const imageLoadedAndVisible = !!state.currentImageElement && !dom.imagePreviewContainer.classList.contains('hidden');
     const definingManualGrid = state.isManualGridModeActive || state.isDrawingManualGrid || state.isAdjustingManualGrid;
@@ -67,6 +67,12 @@ export function updateIconStates() {
     else if (state.isManualGridModeActive) dom.iconGrid.title = "Cancel Manual Grid Mode";
     else if (state.finalManualGridRect) dom.iconGrid.title = state.showFinalManualGrid ? "Hide Confirmed Grid" : "Show Confirmed Grid";
     else dom.iconGrid.title = "Manually Draw Grid Square";
+
+    // Pencil Sketch Icon
+    const pencilSketchDisabled = !imageLoadedAndVisible || definingManualGrid;
+    dom.iconPencilSketch.classList.toggle('disabled', pencilSketchDisabled);
+    dom.iconPencilSketch.classList.toggle('active', state.showPencilSketch && !pencilSketchDisabled);
+    dom.iconPencilSketch.title = pencilSketchDisabled ? (imageLoadedAndVisible ? (definingManualGrid ? "Disabled during grid definition" : "Load an image first") : "Load an image first") : (state.showPencilSketch ? "Hide Pencil Sketch" : "Show Pencil Sketch");
 
 
     // Canvas Cursors & Classes
@@ -149,6 +155,13 @@ export function clearOverlays() {
         overlaysCleared = true;
     }
 
+    if (state.showPencilSketch) { // New
+        state.setShowPencilSketch(false);
+        state.setIsPencilSketchApplied(false);
+        if (dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied;
+        overlaysCleared = true;
+    }
+
     if (
         state.showFinalManualGrid ||
         state.isManualGridModeActive ||
@@ -190,6 +203,11 @@ export function resetCommonState() {
     state.setSelectedReferenceFaceIndex(null);
     state.setShowFaceLandmarks(false);
     state.setShowPoseLandmarks(false);
+
+    state.setShowPencilSketch(false); // New
+    state.setIsPencilSketchApplied(false); // New
+    if (dom.overlayCanvas) delete dom.overlayCanvas.dataset.sketchApplied; // New
+
 
     resetManualGridState(true); // Reset confirmed grid as well
     state.setIsManualGridModeActive(false); // Ensure manual grid mode is off

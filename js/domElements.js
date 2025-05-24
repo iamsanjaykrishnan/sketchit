@@ -7,6 +7,7 @@ export const commentArea = document.getElementById('commentArea');
 export const iconFace = document.getElementById('iconFace');
 export const iconPose = document.getElementById('iconPose');
 export const iconGrid = document.getElementById('iconGrid');
+export const iconPencilSketch = document.getElementById('iconPencilSketch'); // <-- New
 export const iconRestart = document.getElementById('iconRestart');
 export const overlayCanvas = document.getElementById('overlayCanvas');
 export const canvasCtx = overlayCanvas ? overlayCanvas.getContext('2d') : null;
