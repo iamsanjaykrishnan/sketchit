@@ -431,17 +431,18 @@ export function drawGridFromRect(gridRect) {
     const canvasWidth = dom.overlayCanvas.width;
     const canvasHeight = dom.overlayCanvas.height;
 
-    dom.canvasCtx.lineWidth = 1;
+    dom.canvasCtx.lineWidth = 1.5;
 
-    dom.canvasCtx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+    dom.canvasCtx.strokeStyle = 'rgba(0, 123, 255, 0.75)';
     for (let currentX = startX; currentX < canvasWidth + size; currentX += size) { if (currentX >= -size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(currentX, 0); dom.canvasCtx.lineTo(currentX, canvasHeight); dom.canvasCtx.stroke(); } if (size === 0) break; }
     for (let currentX = startX - size; currentX > -size; currentX -= size) { if (currentX < canvasWidth + size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(currentX, 0); dom.canvasCtx.lineTo(currentX, canvasHeight); dom.canvasCtx.stroke(); } if (size === 0) break; }
 
-    dom.canvasCtx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+    dom.canvasCtx.strokeStyle = 'rgba(255, 193, 7, 0.75)';
     for (let currentY = startY; currentY < canvasHeight + size; currentY += size) { if (currentY >= -size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(0, currentY); dom.canvasCtx.lineTo(canvasWidth, currentY); dom.canvasCtx.stroke(); } if (size === 0) break; }
     for (let currentY = startY - size; currentY > -size; currentY -= size) { if (currentY < canvasHeight + size && size > 0) { dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(0, currentY); dom.canvasCtx.lineTo(canvasWidth, currentY); dom.canvasCtx.stroke(); } if (size === 0) break; }
 
     if (size > 0) {
+        dom.canvasCtx.lineWidth = 0.5;
         const thirdSize = size / 3;
         dom.canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
         dom.canvasCtx.beginPath(); dom.canvasCtx.moveTo(startX + thirdSize, startY); dom.canvasCtx.lineTo(startX + thirdSize, endY); dom.canvasCtx.stroke();
